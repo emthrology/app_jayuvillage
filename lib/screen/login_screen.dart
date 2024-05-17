@@ -24,8 +24,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final FormController _formController = Get.put(FormController());
-  String? _phone;
-  String? _password;
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  late WebViewController webController;
+  bool autoLoginEnabled = false;
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) {
@@ -38,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  // 비밀번호 유효성 검사 함수
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return '비밀번호를 입력해주세요';
@@ -46,27 +47,34 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
 
-  late WebViewController webController;
-  bool autoLoginEnabled = false;
 
   @override
   void initState() {
     super.initState();
     webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      // ..setNavigationDelegate(NavigationDelegate(
-      //
-      //
-      // ))
-      ..addJavaScriptChannel('testChannel',
+      ..addJavaScriptChannel('loginChannel',
           onMessageReceived: (JavaScriptMessage ms) {
-        print(ms.message);
-        if (ms.message == 'success') {
+        Map<String, dynamic> session = jsonDecode(ms.message);
+        if (session.containsKey('success')) {
+          _formController.setPhone(_phoneController.text);
+          _formController.setPassword(_passwordController.text);
+          _formController.setSession(session);
           Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+        }else if(session.containsKey('error')) {
+          Fluttertoast.showToast(
+              msg: "오류가 발생하였습니다.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 2,
+              backgroundColor: Color(0xff0baf00),
+              textColor: Colors.white,
+              fontSize: 16.0
+          );
+        }else {
+          print(ms.message);
         }
       })
       ..loadRequest(Uri.parse('https://app.jayuvillage.com/auth/login'));
@@ -123,10 +131,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: EdgeInsets.all(4.0),
                       child: TextFormField(
+                        controller: _phoneController,
                         validator: _validatePhone,
-                        onSaved: (value) {
-                          _phone = value;
-                        },
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
@@ -145,10 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: EdgeInsets.all(4.0),
                       child: TextFormField(
+                        controller: _passwordController,
                         validator: _validatePassword,
-                        onSaved: (value) {
-                          _password = value;
-                        },
                         obscureText: true,
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
@@ -195,11 +199,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                print('로그인 버튼');
-                // callApi();
                 callApi();
               },
-              child: Text('로그인'),
               style: ElevatedButton.styleFrom(
                   textStyle: const TextStyle(
                     fontSize: 24,
@@ -209,6 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Color(0xff0baf00),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5.0))),
+              child: Text('로그인'),
             ),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
@@ -268,34 +270,14 @@ class _LoginScreenState extends State<LoginScreen> {
             homeUrl: Uri.parse('https://app.jayuvillage.com/auth/register'))));
   }
 
-  void test() {
-    // webController.runJavaScript("window.globalFunction('message from flutter')");
-    webController
-        .runJavaScript('receiveMessageFromFlutter("Hello from Flutter!")');
-  }
-
   void callApi() async {
     if (true) {
       final String phone = _phoneController.text;
       final String password = _passwordController.text;
       Map<String, dynamic> payload = {"phone": phone, "password": password};
       String payloadEncoded = json.encode(payload);
-      // final result =  await webController.runJavaScriptReturningResult('receiveMessageFromFlutter($payloadEncoded)');
       await webController
-          .runJavaScript('receiveMessageFromFlutter($payloadEncoded)');
-
-      // Fluttertoast.showToast(
-      //     msg: "연락처:${phone}, 비밀번호:${password}",
-      //     toastLength: Toast.LENGTH_LONG,
-      //     gravity: ToastGravity.TOP,
-      //     timeInSecForIosWeb: 1,
-      //     backgroundColor: Color(0xff0baf00),
-      //     textColor: Colors.white,
-      //     fontSize: 16.0
-      // );
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('응 아니야')));
+          .runJavaScript('loginFromFlutter($payloadEncoded)');
     }
   }
 
@@ -307,11 +289,4 @@ class _LoginScreenState extends State<LoginScreen> {
     return false;
   }
 
-// void initFlutter() {
-//   Map<String, String> message = {
-//     "message": "Hello_from_Flutter"
-//   };
-//   String payloadEncoded = json.encode(message);
-//   webController.runJavaScript('receiveMessageFromFlutter($payloadEncoded)');
-// }
 }

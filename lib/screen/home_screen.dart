@@ -5,17 +5,11 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:webview_ex/component/quick_btns.dart';
-import 'package:webview_ex/component/round_btn.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
-import 'package:webview_ex/screen/login_iscreen_inapp.dart';
-import 'package:webview_ex/screen/sample_screen.dart';
 import 'package:webview_ex/screen/login_screen.dart';
 import 'package:webview_ex/store/login_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
 import '../const/tabs.dart';
-
-// final homeUrl = Uri.parse('https://app.jayuvillage.com');
 
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
@@ -29,15 +23,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController tabController;
   late WebViewController controller;
-
   late Uri _currentUrl;
   int _currentIndex = 0;
   int loadingPercentage = 0;
   bool _showBottomNav = true;
   bool _showQuickBtns = false;
-
   final FormController _formController = Get.put(FormController());
-  // final FormController loginController = Get.find<FormController>();
   final List<String> _tabUrls = [
     "https://app.jayuvillage.com",
     "https://app.jayuvillage.com/posts",
@@ -74,14 +65,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               .startsWith('https://app.jayuvillage.com/auth/login')) {
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => LoginScreen(webController : controller)));
-                // .push(MaterialPageRoute(builder: (_) => LoginScreenInapp()));
             return NavigationDecision.prevent;
           } else {
             return NavigationDecision.navigate;
           }
         },
         onPageStarted: (url) {
-          // print('finished uri is: ${url}');
           setState(() {
             loadingPercentage = 0;
           });
@@ -92,9 +81,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           });
         },
         onPageFinished: (url) {
-          // print('finished uri is: ${url}');
-          // print('_currentUri.toString(): ${_currentUrl.toString()}');
-          if(_formController.phone != null && _formController.password != null) {
+          if(_formController.session['session'] == null) {
             setQuickBtns('AFTERLOGIN');
           }else {
             setQuickBtns('BEFORELOGIN');
@@ -111,16 +98,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           url.endsWith("posts/create") ?  _showBottomNav = false : _showBottomNav = true;
 
           if (url.startsWith('https://app.jayuvillage.com/auth/login')) {
-
+            // 컨트롤러를 초기화
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => LoginScreen(webController: controller)));
-                // .push(MaterialPageRoute(builder: (_) => LoginScreenInapp()));
           }
           setState(() {
             loadingPercentage = 100;
           });
         },
       ))
+      ..addJavaScriptChannel('logoutChannel', onMessageReceived: (JavaScriptMessage ms) {
+        if(ms.message == 'logout') {
+          print(_formController.session);
+          _formController.reset();
+          print(_formController.session);
+          setQuickBtns('BEFORELOGIN');
+        }
+      })
       ..loadRequest(_currentUrl);
   }
 
@@ -251,6 +245,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     controller.scrollTo(0, 0);
   }
   void setQuickBtns(type) {
-    btnData = BTNDATA[type]!;
+    setState(() {
+      btnData = BTNDATA[type]!;
+
+    });
   }
 }
