@@ -1,16 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:webview_ex/screen/home_screen.dart';
+import 'package:webview_ex/store/login_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import '../const/tabs.dart';
 
 final homeUrl = Uri.parse('https://app.jayuvillage.com');
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final WebViewController webController;
+
+  const LoginScreen({super.key, required this.webController});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -18,21 +23,51 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final FormController _formController = Get.put(FormController());
+  String? _phone;
+  String? _password;
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return '연락처를 입력해주세요';
+    }
+    final phoneRegExp = RegExp(r'^01[0-9]?[0-9]{3,4}?[0-9]{4}$');
+    if (!phoneRegExp.hasMatch(value)) {
+      return '연락처를 올바르게 입력해주세요';
+    }
+    return null;
+  }
+
+  // 비밀번호 유효성 검사 함수
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return '비밀번호를 입력해주세요';
+    }
+    return null;
+  }
+
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  late WebViewController wc;
+  late WebViewController webController;
   bool autoLoginEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    wc = WebViewController()
+    webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel('authWebView',
+      // ..setNavigationDelegate(NavigationDelegate(
+      //
+      //
+      // ))
+      ..addJavaScriptChannel('testChannel',
           onMessageReceived: (JavaScriptMessage ms) {
-        print('login channel response');
-        print(ms);
+        print(ms.message);
+        if (ms.message == 'success') {
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+        }
       })
       ..loadRequest(Uri.parse('https://app.jayuvillage.com/auth/login'));
   }
@@ -46,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Opacity(
             opacity: 0.0,
             child: WebViewWidget(
-              controller: wc,
+              controller: webController,
             )),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -87,8 +122,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(children: [
                     Padding(
                       padding: EdgeInsets.all(4.0),
-                      child: TextField(
-                        controller: _phoneController,
+                      child: TextFormField(
+                        validator: _validatePhone,
+                        onSaved: (value) {
+                          _phone = value;
+                        },
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
@@ -106,8 +144,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Padding(
                       padding: EdgeInsets.all(4.0),
-                      child: TextField(
-                        controller: _passwordController,
+                      child: TextFormField(
+                        validator: _validatePassword,
+                        onSaved: (value) {
+                          _password = value;
+                        },
                         obscureText: true,
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
@@ -155,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () {
                 print('로그인 버튼');
+                // callApi();
                 callApi();
               },
               child: Text('로그인'),
@@ -226,43 +268,50 @@ class _LoginScreenState extends State<LoginScreen> {
             homeUrl: Uri.parse('https://app.jayuvillage.com/auth/register'))));
   }
 
+  void test() {
+    // webController.runJavaScript("window.globalFunction('message from flutter')");
+    webController
+        .runJavaScript('receiveMessageFromFlutter("Hello from Flutter!")');
+  }
+
   void callApi() async {
-    if(validateData()) {
+    if (true) {
       final String phone = _phoneController.text;
       final String password = _passwordController.text;
-      // final String jsCode = """
-      //   window.$nuxt.$auth.loginWith('laravelSanctum', {
-      //     data: {
-      //       username: '${phone}',
-      //       password: '${password}'
-      //     }
-      //   }).then(response => {
-      //     console.log('Login successful', response);
-      //   }).catch(error => {
-      //     console.error('Login failed', error);
-      //   });
-      // """;
-      // wc.runJavaScriptReturningResult(jsCode);
-      Fluttertoast.showToast(
-          msg: "연락처:${phone}, 비밀번호:${password}",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0xff0baf00),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
-    }else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('응 아니야'))
-      );
+      Map<String, dynamic> payload = {"phone": phone, "password": password};
+      String payloadEncoded = json.encode(payload);
+      // final result =  await webController.runJavaScriptReturningResult('receiveMessageFromFlutter($payloadEncoded)');
+      await webController
+          .runJavaScript('receiveMessageFromFlutter($payloadEncoded)');
+
+      // Fluttertoast.showToast(
+      //     msg: "연락처:${phone}, 비밀번호:${password}",
+      //     toastLength: Toast.LENGTH_LONG,
+      //     gravity: ToastGravity.TOP,
+      //     timeInSecForIosWeb: 1,
+      //     backgroundColor: Color(0xff0baf00),
+      //     textColor: Colors.white,
+      //     fontSize: 16.0
+      // );
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('응 아니야')));
     }
   }
 
   bool validateData() {
-    if(_formKey.currentState!.validate()) {
-      return true;
+    if (_formKey.currentState?.validate() ?? false) {
+      // 폼이 유효한 경우
+      _formKey.currentState?.save();
     }
     return false;
   }
+
+// void initFlutter() {
+//   Map<String, String> message = {
+//     "message": "Hello_from_Flutter"
+//   };
+//   String payloadEncoded = json.encode(message);
+//   webController.runJavaScript('receiveMessageFromFlutter($payloadEncoded)');
+// }
 }
