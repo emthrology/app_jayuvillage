@@ -75,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
   Future<void> _loadData() async {
     await getValue('session');
+    print('storedValue:$storedValue');
     if(isValidJson(storedValue)) {
       Map<String,dynamic> json = jsonDecode(storedValue);
       setState(() {
@@ -142,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             return NavigationDecision.prevent;
           }
           if(request.url.endsWith('login')) {
+            print('url caught:$request.url');
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => LoginScreen(webController : controller)));
             return NavigationDecision.prevent;

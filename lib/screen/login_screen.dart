@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/screen/home_screen.dart';
@@ -92,6 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
         body: SafeArea(
             child: Stack(
       children: [
@@ -100,147 +102,155 @@ class _LoginScreenState extends State<LoginScreen> {
             child: WebViewWidget(
               controller: webController,
             )),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-                alignment: Alignment.center,
-                child: Image.asset('asset/images/logo_big.png',
-                    width: MediaQuery.of(context).size.width / 2.0)),
-            Container(
-              padding: EdgeInsets.only(top: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '환영합니다!',
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Text(
-                    '휴대폰 번호로 로그인 해주세요.',
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(children: [
-                    Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: TextFormField(
-                        controller: _phoneController,
-                        validator: _validatePhone,
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Color(0xff0baf00),
-                            width: 1.0,
-                          )),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Color(0xff0baf00),
-                            width: 1.0,
-                          )),
-                          labelText: '연락처 11자리(-없이 숫자만 입력)',
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: TextFormField(
-                        controller: _passwordController,
-                        validator: _validatePassword,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Color(0xff0baf00),
-                            width: 1.0,
-                          )),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Color(0xff0baf00),
-                            width: 1.0,
-                          )),
-                          labelText: '비밀번호(초기번호: 생년월일6자리)',
-                        ),
-                      ),
-                    )
-                  ]),
-                )),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
+        GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 36.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                    alignment: Alignment.center,
+                    child: Image.asset('asset/images/logo_big.png',
+                        width: MediaQuery.of(context).size.width / 2.0)),
+                Container(
+                  padding: EdgeInsets.only(top: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Checkbox(
-                          value: autoLoginEnabled,
-                          onChanged: _onCheckboxTapped,
-                          activeColor: Color(0xff0baf00),
-                          checkColor: Colors.white),
-                      const Text(
-                        '자동로그인',
+                      Text(
+                        '환영합니다!',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 24.0,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        '휴대폰 번호로 로그인 해주세요.',
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 30)
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                callApi();
-              },
-              style: ElevatedButton.styleFrom(
-                  textStyle: const TextStyle(
-                    fontSize: 24,
-                  ),
-                  minimumSize: Size(MediaQuery.of(context).size.width - 50, 50),
-                  foregroundColor: Colors.white,
-                  backgroundColor: Color(0xff0baf00),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0))),
-              child: Text('로그인'),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: _onRegisterTapped,
-                    child: Text(
-                      '회원가입',
-                      style: TextStyle(
+                ),
+                Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(children: [
+                        Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: TextFormField(
+                            controller: _phoneController,
+                            validator: _validatePhone,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                color: Color(0xff0baf00),
+                                width: 1.0,
+                              )),
+                              focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                color: Color(0xff0baf00),
+                                width: 1.0,
+                              )),
+                              labelText: '연락처 11자리(-없이 숫자만 입력)',
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: TextFormField(
+                            controller: _passwordController,
+                            validator: _validatePassword,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                color: Color(0xff0baf00),
+                                width: 1.0,
+                              )),
+                              focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                color: Color(0xff0baf00),
+                                width: 1.0,
+                              )),
+                              labelText: '비밀번호(초기번호: 생년월일6자리)',
+                            ),
+                          ),
+                        )
+                      ]),
+                    )),
+                // Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 20.0),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.start,
+                //     children: [
+                //       Row(
+                //         children: [
+                //           Checkbox(
+                //               value: autoLoginEnabled,
+                //               onChanged: _onCheckboxTapped,
+                //               activeColor: Color(0xff0baf00),
+                //               checkColor: Colors.white),
+                //           const Text(
+                //             '자동로그인',
+                //             style: TextStyle(
+                //               fontSize: 24,
+                //               fontWeight: FontWeight.w500,
+                //               color: Colors.grey,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //       const SizedBox(width: 30)
+                //     ],
+                //   ),
+                // ),
+                ElevatedButton(
+                  onPressed: () {
+                    callApi();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      textStyle: const TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
                       ),
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
+                      minimumSize: Size(MediaQuery.of(context).size.width - 50, 50),
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color(0xff0baf00),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0))),
+                  child: Text('로그인'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: _onRegisterTapped,
+                        child: Text(
+                          '회원가입',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
