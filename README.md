@@ -1,6 +1,6 @@
-# webview_ex
+# app_jayuvillage
 
-A new Flutter project.
+A mobile app version of jayuvillage.com
 
 ## Getting Started
 
