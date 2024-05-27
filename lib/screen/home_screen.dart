@@ -1,13 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/quick_btns.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
 import 'package:webview_ex/screen/login_screen.dart';
-import 'package:webview_ex/store/login_controller.dart';
+import 'package:webview_ex/store/secure_storage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../const/tabs.dart';
 
@@ -25,10 +25,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late WebViewController controller;
   late Uri _currentUrl;
   int _currentIndex = 0;
-  int loadingPercentage = 0;
   bool _showBottomNav = true;
   bool _showQuickBtns = false;
-  final FormController _formController = Get.put(FormController());
+  bool _hideBtnsFromWeb = false;
+  final SecureStorage secureStorage = SecureStorage();
+  String storedValue = '';
+  bool session = false;
   final List<String> _tabUrls = [
     "https://app.jayuvillage.com",
     "https://app.jayuvillage.com/posts",
@@ -46,21 +48,104 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     "/somoim",
     "/staffs"
   ];
+  final List<String> externalPages = [
+    "jayupress",
+    "junacademy",
+    "khmon",
+    "wkoreaf",
+    "ghmons",
+    "firstmobile",
+    "jayuwatch",
+  ];
   List<Map<String, dynamic>> btnData = BTNDATA['BEFORELOGIN']!;
+
+  Future<void> getValue(key) async {
+    String value = await secureStorage.readSecureData(key);
+    setState(() {
+      storedValue = value;
+    });
+  }
+
+  // Future<void> writeValue(String key,String value) async {
+  //   await secureStorage.writeSecureData(key, value);
+  // }
+
+  Future<void> deleteData(String key) async {
+    await secureStorage.deleteSecureData(key);
+  }
+  Future<void> _loadData() async {
+    await getValue('session');
+    if(isValidJson(storedValue)) {
+      Map<String,dynamic> json = jsonDecode(storedValue);
+      setState(() {
+
+        session = json.containsKey('success') ? true : false;
+        storedValue = '';
+      });
+    }
+  }
+  Future<void> _launchURL(String url) async {
+    // print('url:$url');
+    // print('uri:${Uri.parse(url)}');
+    // bool result = await canLaunchUrl(Uri.parse(url));
+    // print('result:$result');
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+  Future<void> makeSupportCall(String url) async {
+    final regex = RegExp(r'^tel:(\d{3})(\d{4})(\d{4})$');
+    if(regex.hasMatch(url)) {
+      final match = regex.firstMatch(url);
+      if(match != null) {
+        url = '${match.group(1)}${match.group(2)}${match.group(3)}';
+      }
+      // print('makeSptCall:$url');
+    }
+    try {
+      await FlutterPhoneDirectCaller.callNumber(url);
+    } catch (e) {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+    // _formController.session['session'] == false ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
+
+    setInitialBtnState();
     _currentUrl = widget.homeUrl;
     tabController = TabController(length: TABS.length, vsync: this);
     tabController.addListener(() {
       setState(() {});
     });
-
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onNavigationRequest: (NavigationRequest request) {
+          // print(request.url);
+          if(externalPages.any((e) => request.url.contains(e))) {
+            _launchURL(request.url);
+            return NavigationDecision.prevent;
+          }
+          if(request.url.startsWith('tel:')) {
+            if(Platform.isAndroid) {
+              _launchURL(request.url);
+            }else if(Platform.isIOS) {
+              makeSupportCall(request.url);
+            }
+
+            return NavigationDecision.prevent;
+          }
+          if(request.url.endsWith('login')) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => LoginScreen(webController : controller)));
+            return NavigationDecision.prevent;
+          }
           if (request.url
               .startsWith('https://app.jayuvillage.com/auth/login')) {
             Navigator.of(context)
@@ -69,24 +154,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           } else {
             return NavigationDecision.navigate;
           }
+
         },
         onPageStarted: (url) {
           setState(() {
-            loadingPercentage = 0;
-          });
-        },
-        onProgress: (progress) {
-          setState(() {
-            loadingPercentage = progress;
+            _hideBtnsFromWeb = false;
           });
         },
         onPageFinished: (url) {
-          if(_formController.session['session'] == null) {
+          // print(url);
+          if (session) {
             setQuickBtns('AFTERLOGIN');
-          }else {
+          } else {
             setQuickBtns('BEFORELOGIN');
           }
-          if (_quickBtnPages.any((e) => url.contains(e))) {
+          if (_quickBtnPages.any((e) => url.contains(e)) ) {
             url.endsWith('create') ? _showQuickBtns = false : _showQuickBtns = true;
             if(url.endsWith('mypage')) {
               setQuickBtns('MYPAGE');
@@ -102,18 +184,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => LoginScreen(webController: controller)));
           }
-          setState(() {
-            loadingPercentage = 100;
-          });
         },
       ))
       ..addJavaScriptChannel('logoutChannel', onMessageReceived: (JavaScriptMessage ms) {
         if(ms.message == 'logout') {
-          print(_formController.session);
-          _formController.reset();
-          print(_formController.session);
+          deleteData('session');
+          deleteData('phone');
+          deleteData('password');
           setQuickBtns('BEFORELOGIN');
         }
+      })
+      ..addJavaScriptChannel('hideBtn', onMessageReceived: (JavaScriptMessage ms) {
+        setState(() {
+          ms.message.contains('hide') ? _hideBtnsFromWeb = true : _hideBtnsFromWeb = false;
+        });
+        // print('_hideBtnsFromWeb:$_hideBtnsFromWeb');
       })
       ..loadRequest(_currentUrl);
   }
@@ -135,90 +220,93 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //     // title: Text('login_screen'),
-      //     bottom: PreferredSize(
-      //         preferredSize: Size.fromHeight(20),
-      //         child: Row(
-      //           mainAxisSize: MainAxisSize.min,
-      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //           children: [
-      //             Expanded(
-      //               child: TabBar(
-      //                 controller: tabController,
-      //                 indicatorColor: Color(0xff0baf00),
-      //                 indicatorWeight: 4.0,
-      //                 indicatorSize: TabBarIndicatorSize.tab,
-      //                 labelColor: Color(0xff0baf00),
-      //                 labelStyle: TextStyle(
-      //                   fontWeight: FontWeight.w700,
-      //                 ),
-      //                 unselectedLabelStyle:
-      //                     TextStyle(fontWeight: FontWeight.w500),
-      //                 // unselectedLabelColor: Colors.grey,
-      //                 tabs: TABS
-      //                     .map((e) => Tab(
-      //                           icon: Icon(e.icon),
-      //                           child: Text(e.label),
-      //                         ))
-      //                     .toList(),
-      //               ),
-      //             ),
-      //           ],
-      //         ))),
-      body: SafeArea(
-        child: Stack(children: [
-          WebViewWidget(
-            controller: controller,
-          ),
-          loadingPercentage < 100
-              ? LinearProgressIndicator(
-                  color: Colors.black, value: loadingPercentage / 100.0)
-              : Container(),
-          _showQuickBtns
-              ? Positioned(
-                  bottom: 20, right: 20, child: QuickBtns(onTap: _onBtnTapped, btnData: btnData,))
-              : _currentUrl.toString() == 'https://app.jayuvillage.com'
-                  ? Positioned(
-                      bottom: 20,
-                      right: 20,
-                      child: QuickBtns(onTap: _onBtnTapped, btnData: btnData,))
-                  : Container()
-        ]),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        // appBar: AppBar(
+        //     // title: Text('login_screen'),
+        //     bottom: PreferredSize(
+        //         preferredSize: Size.fromHeight(20),
+        //         child: Row(
+        //           mainAxisSize: MainAxisSize.min,
+        //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //           children: [
+        //             Expanded(
+        //               child: TabBar(
+        //                 controller: tabController,
+        //                 indicatorColor: Color(0xff0baf00),
+        //                 indicatorWeight: 4.0,
+        //                 indicatorSize: TabBarIndicatorSize.tab,
+        //                 labelColor: Color(0xff0baf00),
+        //                 labelStyle: TextStyle(
+        //                   fontWeight: FontWeight.w700,
+        //                 ),
+        //                 unselectedLabelStyle:
+        //                     TextStyle(fontWeight: FontWeight.w500),
+        //                 // unselectedLabelColor: Colors.grey,
+        //                 tabs: TABS
+        //                     .map((e) => Tab(
+        //                           icon: Icon(e.icon),
+        //                           child: Text(e.label),
+        //                         ))
+        //                     .toList(),
+        //               ),
+        //             ),
+        //           ],
+        //         ))),
+        body: SafeArea(
+          child: Stack(children: [
+            WebViewWidget(
+              controller: controller,
+            ),
+            // loadingPercentage < 100
+            //     ? LinearProgressIndicator(
+            //     color: Colors.black, value: loadingPercentage / 100.0)
+            //     : Container(),
+            _showQuickBtns && !_hideBtnsFromWeb
+                ? Positioned(
+                bottom: 20, right: 20, child: QuickBtns(onTap: _onBtnTapped, btnData: btnData,))
+                : _currentUrl.toString() == 'https://app.jayuvillage.com' && !_hideBtnsFromWeb
+                ? Positioned(
+                bottom: 20,
+                right: 20,
+                child: QuickBtns(onTap: _onBtnTapped, btnData: btnData,))
+                : Container()
+          ]),
+        ),
+        bottomNavigationBar: _showBottomNav
+            ? Stack(
+          children: [
+            BottomNavigationBar(
+              selectedItemColor: Color(0xff0baf00),
+              unselectedItemColor: Colors.black,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              currentIndex: _currentIndex,
+              type: BottomNavigationBarType.fixed,
+              onTap: _onItemTapped,
+              items: TABS
+                  .map(
+                    (e) => BottomNavigationBarItem(
+                    icon: Icon(e.icon), label: e.label),
+              )
+                  .toList(),
+            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     RoundBtn(
+            //         color: Color(0xff0baf00),
+            //         borderColor: Color(0xff0baf00),
+            //         text: '조직활동',
+            //         uri: 'https://app.jayuvillage.com/organization',
+            //         onTap: _onBtnTapped),
+            //   ],
+            // )
+          ],
+        )
+            : null,
       ),
-      bottomNavigationBar: _showBottomNav
-          ? Stack(
-              children: [
-                BottomNavigationBar(
-                  selectedItemColor: Color(0xff0baf00),
-                  unselectedItemColor: Colors.black,
-                  showSelectedLabels: true,
-                  showUnselectedLabels: true,
-                  currentIndex: _currentIndex,
-                  type: BottomNavigationBarType.fixed,
-                  onTap: _onItemTapped,
-                  items: TABS
-                      .map(
-                        (e) => BottomNavigationBarItem(
-                            icon: Icon(e.icon), label: e.label),
-                      )
-                      .toList(),
-                ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     RoundBtn(
-                //         color: Color(0xff0baf00),
-                //         borderColor: Color(0xff0baf00),
-                //         text: '조직활동',
-                //         uri: 'https://app.jayuvillage.com/organization',
-                //         onTap: _onBtnTapped),
-                //   ],
-                // )
-              ],
-            )
-          : null,
     );
   }
 
@@ -249,5 +337,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       btnData = BTNDATA[type]!;
 
     });
+  }
+  void setInitialBtnState() {
+    session ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
+
+  }
+  bool isValidJson(String jsonString) {
+    try {
+      jsonDecode(jsonString);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -1,14 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:webview_ex/screen/home_screen.dart';
-import 'package:webview_ex/store/login_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import '../store/secure_storage.dart';
 
 final homeUrl = Uri.parse('https://app.jayuvillage.com');
 
@@ -23,11 +20,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final FormController _formController = Get.put(FormController());
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   late WebViewController webController;
+  final SecureStorage secureStorage = SecureStorage();
   bool autoLoginEnabled = false;
+  String storedValue = '';
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) {
@@ -47,6 +45,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  Future<void> readValue(key) async {
+    String value = await secureStorage.readSecureData(key);
+    setState(() {
+      storedValue = value;
+    });
+  }
+
+  Future<void> writeValue(String key,String value) async {
+    await secureStorage.writeSecureData(key, value);
+  }
 
 
   @override
@@ -58,9 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
           onMessageReceived: (JavaScriptMessage ms) {
         Map<String, dynamic> session = jsonDecode(ms.message);
         if (session.containsKey('success')) {
-          _formController.setPhone(_phoneController.text);
-          _formController.setPassword(_passwordController.text);
-          _formController.setSession(session);
+          writeValue('phone',_phoneController.text);
+          writeValue('password',_passwordController.text);
+          writeValue('session', jsonEncode(session));
+
           Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
         }else if(session.containsKey('error')) {
@@ -238,12 +247,27 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: _onTapped,
-                child: (Icon(
-                  Icons.arrow_back_ios_new,
-                  size: 32.0,
-                )),
+              Semantics(
+                label: '뒤로가기',
+                hint: '이전 화면으로 가기 위해 누르세요',
+                child: GestureDetector(
+                  onTap: _onTapped,
+                  child: Row(
+                    children:[
+                      Icon(
+                        Icons.arrow_back_ios_new,
+                        size: 32.0,
+                      ),
+                      Text('뒤로가기',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      )
+                    ]
+                  ),
+                ),
               )
             ],
           ),
@@ -271,14 +295,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void callApi() async {
-    if (true) {
+    if (validateParams()) {
       final String phone = _phoneController.text;
       final String password = _passwordController.text;
       Map<String, dynamic> payload = {"phone": phone, "password": password};
       String payloadEncoded = json.encode(payload);
       await webController
           .runJavaScript('loginFromFlutter($payloadEncoded)');
+    }else {
+      Fluttertoast.showToast(
+          msg: "연락처를 올바르게 입력해주세요.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 4,
+          backgroundColor: Color(0xff0baf00),
+          textColor: Colors.white,
+          fontSize: 20.0,
+      );
     }
+  }
+
+  bool validateParams() {
+    final RegExp phoneRegExp = RegExp(r'^010\d{8}$');
+    return phoneRegExp.hasMatch(_phoneController.text);
   }
 
   bool validateData() {

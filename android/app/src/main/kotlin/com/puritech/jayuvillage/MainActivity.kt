@@ -1,4 +1,4 @@
-package com.example.webview_ex
+package com.puritech.jayuvillage
 
 import io.flutter.embedding.android.FlutterActivity
 

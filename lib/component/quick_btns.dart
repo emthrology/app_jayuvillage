@@ -19,7 +19,8 @@ class QuickBtns extends StatelessWidget {
             borderColor: e['borderColor']?? Colors.orange,
             fontSize: e['fontSize']?? 18.0,
           )
-      ).toList()
+      ).toList(),
+
       // [
       //   RoundBtn(text: '글쓰기', uri: 'https://app.jayuvillage.com/posts/create', onTap: onTap,),
       //   RoundBtn(text: '가입하기', uri: 'https://app.jayuvillage.com/auth/register', onTap: onTap),
