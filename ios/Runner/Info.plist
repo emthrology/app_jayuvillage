@@ -2,12 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>ITSAppUsesExemptEncryption</key>
+    <false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+      <array>
+         <string>ko-KR</string>
+      </array>
+    <key>CFBundleLocalizations</key>
+      <array>
+         <string>ko-KR</string>
+      </array>
 	<key>CFBundleDisplayName</key>
-	<string>Webview Ex</string>
+	<string>자유마을</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -43,9 +51,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Flutter requires access to camera.</string>
+	<string>자유마을 앱에서 사용자의 카메라에 접근을 요청합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>자유마을 앱에서 사용자의 사진 저장소에 접근을 요청합니다.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Flutter requires access to microphone.</string>
+	<string>자유마을 앱에서 사용자의 마이크에 접근을 요청합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -67,11 +67,14 @@ class _LoginScreenState extends State<LoginScreen> {
           onMessageReceived: (JavaScriptMessage ms) {
         Map<String, dynamic> session = jsonDecode(ms.message);
         if (session.containsKey('success')) {
-          writeValue('phone',_phoneController.text);
-          writeValue('password',_passwordController.text);
-          writeValue('session', jsonEncode(session));
+          setState(() {
+            writeValue('phone',_phoneController.text);
+            writeValue('password',_passwordController.text);
+            writeValue('session', jsonEncode(session));
+          });
 
-          Navigator.of(context).push(
+
+          Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
         }else if(session.containsKey('error')) {
           Fluttertoast.showToast(
