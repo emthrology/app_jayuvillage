@@ -188,11 +188,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             });
             print('_hideBtnsFromWeb:$_hideBtnsFromWeb');
           })
-      ..addJavaScriptChannel('getImageFromFlutter',
-          onMessageReceived: (JavaScriptMessage ms) {
-            print(ms.message);
-            ms.message.contains('camera') ? _getImage(true) : _getImage(false);
-          })
       ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){
         _launchURL(ms.message);
       })
@@ -356,6 +351,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return false;
     }
   }
+
 
   Future<void> getValue(key) async {
     String value = await secureStorage.readSecureData(key);

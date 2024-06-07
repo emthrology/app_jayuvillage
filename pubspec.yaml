@@ -47,11 +47,11 @@ dependencies:
   flutter_native_splash: ^2.4.0
   flutter_secure_storage: ^9.2.1
   image_picker: ^1.1.1
-  flutter_quill: ^9.3.21
-  # for fluter_quill
-  super_clipboard: ^0.8.16
-  flutter_keyboard_visibility: ^6.0.0
-  device_info_plus: ^10.1.0
+#  flutter_quill: ^9.3.21
+#  # for fluter_quill
+#  super_clipboard: ^0.8.16
+#  flutter_keyboard_visibility: ^6.0.0
+#  device_info_plus: ^10.1.0
 dev_dependencies:
 #  flutter_launcher_icons: ^0.13.1
   flutter_test:

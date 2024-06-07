@@ -2,18 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>ITSAppUsesExemptEncryption</key>
-    <false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-      <array>
-         <string>ko-KR</string>
-      </array>
-    <key>CFBundleLocalizations</key>
-      <array>
-         <string>ko-KR</string>
-      </array>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>자유마을</string>
 	<key>CFBundleExecutable</key>
@@ -22,6 +14,10 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ko-KR</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>webview_ex</string>
 	<key>CFBundlePackageType</key>
@@ -32,6 +28,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesExemptEncryption</key>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>
@@ -40,11 +38,6 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>keychain-access-groups</key>
-    <array>
-        <string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
-    </array>
-
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -52,10 +45,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>자유마을 앱에서 사용자의 카메라에 접근을 요청합니다.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-    <string>자유마을 앱에서 사용자의 사진 저장소에 접근을 요청합니다.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>자유마을 앱에서 사용자의 마이크에 접근을 요청합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>자유마을 앱에서 사용자의 사진 저장소에 접근을 요청합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -64,18 +57,18 @@
 	<string>Main</string>
 	<key>UIStatusBarHidden</key>
 	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
 	</array>
 </dict>
 </plist>

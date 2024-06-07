@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/screen/home_screen.dart';
@@ -186,11 +185,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 1.0,
                               )),
                               labelText: '비밀번호(초기번호: 생년월일6자리)',
-                            ),
-                          ),
+                            ),),
                         )
                       ]),
-                    )),
+                    )
+                ),
                 // Padding(
                 //   padding: EdgeInsets.symmetric(horizontal: 20.0),
                 //   child: Row(
@@ -245,15 +244,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
                             color: Colors.black,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
+                          ),),)],),
                 )
               ],
-            ),
-          ),
+            ),),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -276,17 +270,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 18.0,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
-                        ),
-                      )
-                    ]
-                  ),
-                ),
-              )
-            ],
-          ),
+                        ),)]),),)],),
         ),
-      ],
-    )));
+      ],)));
   }
 
   void _onTapped() {
