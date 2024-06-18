@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Color(0xff0baf00),
                                 width: 1.0,
                               )),
-                              labelText: '비밀번호(초기번호: 생년월일6자리)',
+                              labelText: '비밀번호',
                             ),),
                         )
                       ]),
