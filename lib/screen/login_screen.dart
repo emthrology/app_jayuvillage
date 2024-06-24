@@ -234,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
                         onTap: _onRegisterTapped,
@@ -244,7 +244,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
                             color: Colors.black,
-                          ),),)],),
+                          ),),),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          '|',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _onPasswordChangeTapped,
+                        child: Text(
+                          '비밀번호 변경',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),),),
+                    ],),
                 )
               ],
             ),),
@@ -291,6 +312,11 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => HomeScreen(
             homeUrl: Uri.parse('https://app.jayuvillage.com/auth/register'))));
+  }
+  void _onPasswordChangeTapped() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => HomeScreen(
+            homeUrl: Uri.parse('https://app.jayuvillage.com/auth/password'))));
   }
 
   void callApi() async {

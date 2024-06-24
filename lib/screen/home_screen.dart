@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           });
         },
         onPageFinished: (url) {
+          _controller.runJavaScript('window.alert = function(e){alertChannel.postMessage(e)}');
           if (session) {
             setQuickBtns('AFTERLOGIN');
           } else {
@@ -166,6 +167,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
         },
       ))
+      ..addJavaScriptChannel('alertChannel', onMessageReceived: (JavaScriptMessage ms) {
+        Fluttertoast.showToast(
+          msg: ms.message,
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Color(0xff8bf05d),
+          textColor: Colors.black,
+          fontSize: 24.0,
+
+        );
+      })
       ..addJavaScriptChannel('logoutChannel',
           onMessageReceived: (JavaScriptMessage ms) {
             if (ms.message == 'logout') {
@@ -186,11 +199,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? _hideBtnsFromWeb = true
                   : _hideBtnsFromWeb = false;
             });
-            print('_hideBtnsFromWeb:$_hideBtnsFromWeb');
+            // print('_hideBtnsFromWeb:$_hideBtnsFromWeb');
           })
       ..addJavaScriptChannel('getImageFromFlutter',
           onMessageReceived: (JavaScriptMessage ms) {
-            print(ms.message);
+            // print(ms.message);
             ms.message.contains('camera') ? _getImage(true) : _getImage(false);
           })
       ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){
@@ -388,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _launchURL(String url) async {
-    print(url);
+    // print(url);
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {

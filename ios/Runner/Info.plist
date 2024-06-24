@@ -44,11 +44,9 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>자유마을 앱에서 사용자의 카메라에 접근을 요청합니다.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>자유마을 앱에서 사용자의 마이크에 접근을 요청합니다.</string>
+	<string>사진을 첨부하여 게시물을 등록하기 위해 카메라 권한을 요청합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>자유마을 앱에서 사용자의 사진 저장소에 접근을 요청합니다.</string>
+	<string>사진을 첨부하여 게시물을 등록하기 위해 사진 저장소에 권한을 요청합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
