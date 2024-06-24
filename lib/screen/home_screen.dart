@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
   bool _showCreatePostNav = false;
   bool _showBottomNav = true;
-  bool _showQuickBtns = false;
+  bool _showQuickBtns = true;
   bool _hideBtnsFromWeb = false;
   final ImagePickerService _imagePickerService = ImagePickerService();
   final UrlLaunchService urlService = UrlLaunchService();
