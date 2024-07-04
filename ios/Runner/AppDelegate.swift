@@ -10,4 +10,11 @@ import Flutter
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
+  override func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    if let url = userInfo["url"] as? String {
+      NotificationCenter.default.post(name: Notification.Name("openURL"), object: nil, userInfo: ["url": url])
+    }
+    completionHandler(.newData)
+  }
 }

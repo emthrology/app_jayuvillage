@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:dio/dio.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -19,6 +21,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final dio = Dio();
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,6 +29,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final SecureStorage secureStorage = SecureStorage();
   bool autoLoginEnabled = false;
   String storedValue = '';
+  String authToken = '';
+
+  void storeToken(token, userId) async {
+    final response = await dio.post('https://api.jayuvillage.com/api/store-token',
+        data: {
+          'token': token,
+          'user_id': userId
+        },
+
+        options: Options(
+          validateStatus: (statusCode) {
+            if (statusCode == null) {
+              return false;
+            } else {
+              return statusCode >= 200 && statusCode <= 500;
+            }
+          }
+        )
+    );
+    print(response.data.toString());
+  }
+  void _getFCMToken(userId) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+
+    // setState(() {
+    //   _fcmToken = token;
+    // });
+    storeToken(token,userId);
+    print("FCM Token: $token");
+  }
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) {
@@ -65,13 +99,15 @@ class _LoginScreenState extends State<LoginScreen> {
       ..addJavaScriptChannel('loginChannel',
           onMessageReceived: (JavaScriptMessage ms) {
         Map<String, dynamic> session = jsonDecode(ms.message);
+        print("session:$session");
         if (session.containsKey('success')) {
           setState(() {
             writeValue('phone',_phoneController.text);
             writeValue('password',_passwordController.text);
             writeValue('session', jsonEncode(session));
           });
-
+          //send fcm token to server;
+          _getFCMToken(session['success']['id']);
 
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));

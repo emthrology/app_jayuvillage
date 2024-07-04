@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io' show File, Platform;
-
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +21,9 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../const/tabs.dart';
 import '../const/create_post_tabs.dart';
 
+import 'package:logger/logger.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter/scheduler.dart';
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
 
@@ -32,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController tabController;
   late final WebViewController _controller;
   late Uri _currentUrl;
+  String pushedUrl = '';
   int _currentIndex = 0;
   bool _showCreatePostNav = false;
   bool _showBottomNav = true;
@@ -70,13 +76,152 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     "ihappynanum",
   ];
   List<Map<String, dynamic>> btnData = BTNDATA['BEFORELOGIN']!;
+  var logger = Logger(
+    filter: null, // Use the default LogFilter (-> only log in debug mode)
+    printer: PrettyPrinter(), // Use the PrettyPrinter to format and print log
+    output: null, // Use the default LogOutput (-> send everything to console)
+  );
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage rm) async {
+    await Firebase.initializeApp();
+  }
+  Future<void> _firebaseSubscribe() async {
+    await FirebaseMessaging.instance.subscribeToTopic("jayuvillage");
+    await FirebaseMessaging.instance.subscribeToTopic("notice");
+    await FirebaseMessaging.instance.subscribeToTopic("post");
+    await FirebaseMessaging.instance.subscribeToTopic("video");
+    await FirebaseMessaging.instance.subscribeToTopic("webtoon");
+  }
+  Future<void> setBadgeCount(int count) async {
+    final bool isAppBadge = await FlutterAppBadger.isAppBadgeSupported();
+    if (isAppBadge == true) {
+      await FlutterAppBadger.updateBadgeCount(count);
+    }
+  }
+  // 배지 숫자를 0으로 초기화하는 함수
+  Future<void> resetBadgeCount() async {
+    final bool isAppBadge = await FlutterAppBadger.isAppBadgeSupported();
+    if (isAppBadge == true) {
+      await FlutterAppBadger.removeBadge();
+    }
+  }
 
+  void _onShareWithResult(BuildContext context, uri) async {
+    // A builder is used to retrieve the context immediately
+    // surrounding the ElevatedButton.
+    //
+    // The context's `findRenderObject` returns the first
+    // RenderObject in its descendent tree when it's not
+    // a RenderObjectWidget. The ElevatedButton's RenderObject
+    // has its position and size after it's built.
+
+    // if(Platform.isIOS) {
+    //   Fluttertoast.showToast(
+    //     msg: '애플 기기 공유는 준비중입니다.',
+    //     toastLength: Toast.LENGTH_LONG,
+    //     gravity: ToastGravity.TOP,
+    //     timeInSecForIosWeb: 5,
+    //     backgroundColor: Color(0xff8bf05d),
+    //     textColor: Colors.black,
+    //     fontSize: 24.0,
+    //
+    //   );
+    // }else {
+    //   final box = context.findRenderObject() as RenderBox?;
+    //
+    //   final scaffoldMessenger = ScaffoldMessenger.of(context);
+    //   ShareResult shareResult;
+    //
+    //   shareResult = await Share.shareUri(
+    //     Uri.parse(uri),
+    //     sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+    //   );
+    //
+    //   scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
+    // }
+
+    final box = context.findRenderObject() as RenderBox?;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    ShareResult shareResult;
+
+    shareResult = await Share.shareUri(
+      Uri.parse(uri),
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+    ).catchError((error) {
+      return error;
+    });
+
+    scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
+  }
+  SnackBar getResultSnackBar(ShareResult result) {
+    return SnackBar(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Share result: ${result.status}"),
+          if (result.status == ShareResultStatus.success)
+            Text("Shared to: ${result.raw}")
+        ],
+      ),
+    );
+  }
   @override
   void initState() {
     super.initState();
+    _firebaseSubscribe();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onMessage.listen((RemoteMessage? message) {
+      if (message != null) {
+        if (message.notification != null) {
+          logger.e(message.notification!.title);
+          logger.e(message.notification!.body);
+          logger.e(message.data["url"]);
+          pushedUrl = message.data["url"];
+          if(pushedUrl != '') {
+            _controller.loadRequest(Uri.parse(pushedUrl));
+          }
+          resetBadgeCount();
+        }
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? message) {
+      if (message != null) {
+        if (message.notification != null) {
+          logger.e(message.notification!.title);
+          logger.e(message.notification!.body);
+          logger.e(message.data["url"]);
+          pushedUrl = message.data["url"];
+          if(pushedUrl != '') {
+            _controller.loadRequest(Uri.parse(pushedUrl));
+          }
+          resetBadgeCount();
+      }
+        }
+    });
+    FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((RemoteMessage? message) {
+      if (message != null) {
+        if (message.notification != null) {
+          logger.e(message.notification!.title);
+          logger.e(message.notification!.body);
+          logger.e(message.data["url"]);
+          pushedUrl = message.data["url"];
+          if(pushedUrl != '') {
+            _controller.loadRequest(Uri.parse(pushedUrl));
+          }
+          resetBadgeCount();
+        }
+      }
+    });
     _loadData();
     setInitialBtnState();
-    _currentUrl = widget.homeUrl;
+    if(pushedUrl == '') {
+      _currentUrl = widget.homeUrl;
+    }else {
+      _currentUrl = Uri.parse(pushedUrl);
+    }
     tabController = TabController(length: TABS.length, vsync: this);
     tabController.addListener(() {
       setState(() {});
@@ -209,6 +354,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){
         _launchURL(ms.message);
       })
+      ..addJavaScriptChannel('shareFlutter', onMessageReceived: (JavaScriptMessage ms){
+        print(ms.message);
+        var id = int.parse(ms.message);
+        //TODO 플랫폼 별 앱 링크 만들기
+        var uri = 'https://app.jayuvillage.com/posts/$id';
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          _onShareWithResult(context,uri);
+        });
+
+        // Fluttertoast.showToast(
+        //   msg: "공유기능 준비중입니다.",
+        //   toastLength: Toast.LENGTH_LONG,
+        //   gravity: ToastGravity.TOP,
+        //   timeInSecForIosWeb: 4,
+        //   backgroundColor: Color(0xff0baf00),
+        //   textColor: Colors.white,
+        //   fontSize: 20.0,
+        // );
+      })
       ..loadRequest(_currentUrl);
       if (controller.platform is AndroidWebViewController) {
         AndroidWebViewController.enableDebugging(true);
@@ -323,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       scrollToTop();
     } else {
       setState(() {
-        _controller.loadRequest(Uri.parse(url));
+          _controller.loadRequest(Uri.parse(url));
       });
     }
   }
