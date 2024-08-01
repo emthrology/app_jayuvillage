@@ -1,4 +1,7 @@
 PODS:
+  - Alamofire (5.9.1)
+  - app_links (0.0.1):
+    - Flutter
   - Firebase/CoreOnly (10.27.0):
     - FirebaseCore (= 10.27.0)
   - Firebase/Messaging (10.27.0):
@@ -83,6 +86,24 @@ PODS:
     - GoogleUtilities/Privacy
   - image_picker_ios (0.0.1):
     - Flutter
+  - kakao_flutter_sdk_common (1.9.3):
+    - Flutter
+  - KakaoSDKAuth (2.22.5):
+    - KakaoSDKCommon (= 2.22.5)
+  - KakaoSDKCommon (2.22.5):
+    - KakaoSDKCommon/Common (= 2.22.5)
+    - KakaoSDKCommon/Network (= 2.22.5)
+  - KakaoSDKCommon/Common (2.22.5)
+  - KakaoSDKCommon/Network (2.22.5):
+    - Alamofire (~> 5.9.0)
+    - KakaoSDKCommon/Common (= 2.22.5)
+  - KakaoSDKShare (2.22.5):
+    - KakaoSDKCommon (= 2.22.5)
+    - KakaoSDKTemplate (= 2.22.5)
+  - KakaoSDKTemplate (2.22.5):
+    - KakaoSDKCommon/Common (= 2.22.5)
+  - KakaoSDKUser (2.22.5):
+    - KakaoSDKAuth (= 2.22.5)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -95,6 +116,9 @@ PODS:
   - PromisesObjC (2.4.0)
   - share_plus (0.0.1):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - Toast (4.1.1)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -102,6 +126,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - app_links (from `.symlinks/plugins/app_links/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
@@ -113,13 +138,20 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - kakao_flutter_sdk_common (from `.symlinks/plugins/kakao_flutter_sdk_common/ios`)
+  - KakaoSDKAuth
+  - KakaoSDKCommon
+  - KakaoSDKShare
+  - KakaoSDKUser
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
   trunk:
+    - Alamofire
     - Firebase
     - FirebaseCore
     - FirebaseCoreInternal
@@ -127,12 +159,19 @@ SPEC REPOS:
     - FirebaseMessaging
     - GoogleDataTransport
     - GoogleUtilities
+    - KakaoSDKAuth
+    - KakaoSDKCommon
+    - KakaoSDKShare
+    - KakaoSDKTemplate
+    - KakaoSDKUser
     - nanopb
     - OrderedSet
     - PromisesObjC
     - Toast
 
 EXTERNAL SOURCES:
+  app_links:
+    :path: ".symlinks/plugins/app_links/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_messaging:
@@ -155,16 +194,22 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/fluttertoast/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  kakao_flutter_sdk_common:
+    :path: ".symlinks/plugins/kakao_flutter_sdk_common/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
+  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
+  app_links: e70ca16b4b0f88253b3b3660200d4a10b4ea9795
   Firebase: 26b040b20866a55f55eb3611b9fcf3ae64816b86
   firebase_core: 483cfad66d24d8f3c233f31db4263830c625c909
   firebase_messaging: e60c0694699d8a2e56a319e043709583f6544123
@@ -183,15 +228,22 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
+  kakao_flutter_sdk_common: 80c3308f209f3d6cc74e338ffea3a51d17501d77
+  KakaoSDKAuth: 857224e06f78412cdf41a9e601a41d00b2d592ee
+  KakaoSDKCommon: 05078c15d1faa7e97728e26c518a992b5cffe93c
+  KakaoSDKShare: fd25fe4569d2e0e8b58c26eabb6a8590a7078d40
+  KakaoSDKTemplate: add702fd8cd6c9dead7cbf0af731d8cadcf43057
+  KakaoSDKUser: b37905ae618cfc3f0310dbbb5236320d7335bcd2
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   OrderedSet: aaeb196f7fef5a9edf55d89760da9176ad40b93c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   share_plus: 8875f4f2500512ea181eef553c3e27dba5135aad
+  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
   webview_flutter_wkwebview: be0f0d33777f1bfd0c9fdcb594786704dbf65f36
 
-PODFILE CHECKSUM: 097bf0c3f406b0aef5ea87737cd93f9527de884a
+PODFILE CHECKSUM: b65c7daefcc88331f524b2df8893ccf54878e1e8
 
 COCOAPODS: 1.14.2

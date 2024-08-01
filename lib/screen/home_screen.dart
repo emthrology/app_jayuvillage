@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/quick_btns.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
@@ -34,6 +35,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late TabController tabController;
   late final WebViewController _controller;
   late Uri _currentUrl;
@@ -49,11 +52,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String storedValue = '';
   bool session = false;
   final List<String> _tabUrls = [
-    "https://app.jayuvillage.com",
-    "https://app.jayuvillage.com/posts",
-    "https://app.jayuvillage.com/organization",
-    "https://app.jayuvillage.com/chat",
-    "https://app.jayuvillage.com/mypage",
+    // "https://jayuvillage.com",
+    "https://jayuvillage.com",
+    "https://jayuvillage.com/posts",
+    "https://jayuvillage.com/organization",
+    "https://jayuvillage.com/chat",
+    "https://jayuvillage.com/mypage",
   ];
   final List<String> _quickBtnPages = [
     "/contents",
@@ -105,7 +109,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _onShareWithResult(BuildContext context, uri) async {
+  String shareUrlPath = '';
+  void _onShareWithResult(uri) async {
+    //TODO kakao share
+    // final kakaoAvail = await ShareClient.instance.isKakaoTalkSharingAvailable();
+    // if(kakaoAvail) {
+    //   final FeedTemplate defaultFeed = FeedTemplate(
+    //     content: Content(
+    //       title:'자유마을',
+    //       description: '3506개의 희망',
+    //       imageUrl: Uri.parse(''),
+    //       link:Link(webUrl: Uri.parse(uri), mobileWebUrl: Uri.parse(uri))
+    //     ),
+    //     buttonTitle: '열기',
+    //   );
+    //   Uri kakaoUri = await ShareClient.instance.shareDefault(template: defaultFeed);
+    //   await ShareClient.instance.launchKakaoTalk(kakaoUri);
+    // }
+    final context = _scaffoldKey.currentContext;
     // A builder is used to retrieve the context immediately
     // surrounding the ElevatedButton.
     //
@@ -113,45 +134,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // RenderObject in its descendent tree when it's not
     // a RenderObjectWidget. The ElevatedButton's RenderObject
     // has its position and size after it's built.
+    final box = context?.findRenderObject() as RenderBox?;
 
-    // if(Platform.isIOS) {
-    //   Fluttertoast.showToast(
-    //     msg: '애플 기기 공유는 준비중입니다.',
-    //     toastLength: Toast.LENGTH_LONG,
-    //     gravity: ToastGravity.TOP,
-    //     timeInSecForIosWeb: 5,
-    //     backgroundColor: Color(0xff8bf05d),
-    //     textColor: Colors.black,
-    //     fontSize: 24.0,
-    //
-    //   );
-    // }else {
-    //   final box = context.findRenderObject() as RenderBox?;
-    //
-    //   final scaffoldMessenger = ScaffoldMessenger.of(context);
-    //   ShareResult shareResult;
-    //
-    //   shareResult = await Share.shareUri(
-    //     Uri.parse(uri),
-    //     sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-    //   );
-    //
-    //   scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
-    // }
-
-    final box = context.findRenderObject() as RenderBox?;
-
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context!);
     ShareResult shareResult;
+    if(context != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        shareResult = await Share.shareUri(
+          Uri.parse(uri),
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+        ).catchError((error) {
+          return error;
+        });
+        bool result = shareResult.status == ShareResultStatus.success;
+        if(result) {
+          scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
 
-    shareResult = await Share.shareUri(
-      Uri.parse(uri),
-      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-    ).catchError((error) {
-      return error;
-    });
+        }
+      });
 
-    scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
+    }
+
   }
   SnackBar getResultSnackBar(ShareResult result) {
     return SnackBar(
@@ -159,12 +162,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Share result: ${result.status}"),
-          if (result.status == ShareResultStatus.success)
-            Text("Shared to: ${result.raw}")
+          Text("공유 성공"),
+          // if (result.status == ShareResultStatus.success)
+          //   Text("Shared to: ${result.raw}")
         ],
       ),
     );
+  }
+  void _setComponents(String url) {
+    if (session) {
+      setQuickBtns('AFTERLOGIN');
+    } else {
+      setQuickBtns('BEFORELOGIN');
+    }
+    if (_quickBtnPages.any((e) => url.contains(e))) {
+      url.endsWith('create')
+          ? _showQuickBtns = false
+          : _showQuickBtns = true;
+      if (url.endsWith('mypage')) {
+        setQuickBtns('MYPAGE');
+      }
+    } else {
+      _showQuickBtns = false;
+    }
+    url.endsWith("posts/create")
+        ? _showBottomNav = false
+        : _showBottomNav = true;
+    url.endsWith("posts/create")
+        ? _showCreatePostNav = true
+        : _showCreatePostNav = false;
+    if (url.endsWith("posts/create")) {
+      setState(() {
+        _showQuickBtns = false;
+      });
+    }
   }
   @override
   void initState() {
@@ -257,13 +288,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             return NavigationDecision.prevent;
           }
+          if (isAppLink(request.url)) {
+            String p_url = request.url.replaceAll('intent:', '');
+            _launchURL(p_url);
+            // handleAppLink(url);
+            return NavigationDecision.prevent;
+          }
           if (request.url.endsWith('login')) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => LoginScreen(webController: controller)));
             return NavigationDecision.prevent;
           }
           if (request.url
-              .startsWith('https://app.jayuvillage.com/auth/login')) {
+              .startsWith('https://jayuvillage.com/auth/login')) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => LoginScreen(webController: controller)));
             return NavigationDecision.prevent;
@@ -277,41 +314,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           });
         },
         onPageFinished: (url) {
+          print('finishedurl:$url');
           _controller.runJavaScript('window.alert = function(e){alertChannel.postMessage(e)}');
-          if (session) {
-            setQuickBtns('AFTERLOGIN');
-          } else {
-            setQuickBtns('BEFORELOGIN');
-          }
-          if (_quickBtnPages.any((e) => url.contains(e))) {
-            url.endsWith('create')
-                ? _showQuickBtns = false
-                : _showQuickBtns = true;
-            if (url.endsWith('mypage')) {
-              setQuickBtns('MYPAGE');
-            }
-          } else {
-            _showQuickBtns = false;
-          }
-          url.endsWith("posts/create")
-              ? _showBottomNav = false
-              : _showBottomNav = true;
-          url.endsWith("posts/create")
-              ? _showCreatePostNav = true
-              : _showCreatePostNav = false;
-          if (url.endsWith("posts/create")) {
-            setState(() {
-              _showQuickBtns = false;
-            });
-          }
+          _setComponents(url);
 
-          if (url.startsWith('https://app.jayuvillage.com/auth/login')) {
+
+          if (url.startsWith('https://jayuvillage.com/auth/login')) {
             // 컨트롤러를 초기화
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => LoginScreen(webController: controller)));
           }
         },
       ))
+      ..addJavaScriptChannel('thruFlutter', onMessageReceived: (JavaScriptMessage ms) {
+        String value = ms.message;
+        Fluttertoast.showToast(
+          msg: 'isFlutter:$value',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Color(0xff8bf05d),
+          textColor: Colors.black,
+          fontSize: 24.0,
+
+        );
+      })
       ..addJavaScriptChannel('alertChannel', onMessageReceived: (JavaScriptMessage ms) {
         Fluttertoast.showToast(
           msg: ms.message,
@@ -354,24 +381,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){
         _launchURL(ms.message);
       })
-      ..addJavaScriptChannel('shareFlutter', onMessageReceived: (JavaScriptMessage ms){
-        print(ms.message);
-        var id = int.parse(ms.message);
-        //TODO 플랫폼 별 앱 링크 만들기
-        var uri = 'https://app.jayuvillage.com/posts/$id';
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          _onShareWithResult(context,uri);
-        });
-
-        // Fluttertoast.showToast(
-        //   msg: "공유기능 준비중입니다.",
-        //   toastLength: Toast.LENGTH_LONG,
-        //   gravity: ToastGravity.TOP,
-        //   timeInSecForIosWeb: 4,
-        //   backgroundColor: Color(0xff0baf00),
-        //   textColor: Colors.white,
-        //   fontSize: 20.0,
-        // );
+      ..addJavaScriptChannel('flutterSetComponents', onMessageReceived: (JavaScriptMessage ms){
+        _setComponents(ms.message);
+      })
+      ..addJavaScriptChannel('flutterShareBtn', onMessageReceived: (JavaScriptMessage ms){
+        final decodedParams = jsonDecode(ms.message);
+        var path = decodedParams['path'];
+        var id = decodedParams['id'];
+        shareUrlPath = '$path/$id';
+        print('shareBtnCalled');
+        setQuickBtns('SHARE');
       })
       ..loadRequest(_currentUrl);
       if (controller.platform is AndroidWebViewController) {
@@ -402,6 +421,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return PopScope(
       canPop: false,
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Stack(children: [
@@ -416,7 +436,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onTap: _onBtnTapped,
                   btnData: btnData,
                 ))
-                : _currentUrl.toString() == 'https://app.jayuvillage.com' &&
+                // : _currentUrl.toString() == 'https://jayuvillage.com' &&
+                : _currentUrl.toString() == 'https://jayuvillage.com' &&
                 !_hideBtnsFromWeb
                 ? Positioned(
                 bottom: 20,
@@ -455,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             //         color: Color(0xff0baf00),
             //         borderColor: Color(0xff0baf00),
             //         text: '조직활동',
-            //         uri: 'https://app.jayuvillage.com/organization',
+            //         uri: 'https://jayuvillage.com/organization',
             //         onTap: _onBtnTapped),
             //   ],
             // )
@@ -485,7 +506,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onBtnTapped(url) {
     if (url == 'top') {
       scrollToTop();
-    } else {
+    } else if(url == 'share') {
+      _onShareWithResult('https://jayuvillage.com/$shareUrlPath');
+    }else {
       setState(() {
           _controller.loadRequest(Uri.parse(url));
       });
@@ -534,6 +557,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  bool isAppLink(String url) {
+    final appScheme = Uri.parse(url).scheme;
+    return appScheme != 'http' &&
+        appScheme != 'https' &&
+        appScheme != 'about:blank' &&
+        appScheme != 'data';
+  }
 
   Future<void> getValue(key) async {
     String value = await secureStorage.readSecureData(key);
@@ -569,6 +599,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {
+      print('cannot launch url');
       throw 'Could not launch $url';
     }
   }

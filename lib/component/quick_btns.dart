@@ -22,8 +22,8 @@ class QuickBtns extends StatelessWidget {
       ).toList(),
 
       // [
-      //   RoundBtn(text: '글쓰기', uri: 'https://app.jayuvillage.com/posts/create', onTap: onTap,),
-      //   RoundBtn(text: '가입하기', uri: 'https://app.jayuvillage.com/auth/register', onTap: onTap),
+      //   RoundBtn(text: '글쓰기', uri: 'https://jayuvillage.com/posts/create', onTap: onTap,),
+      //   RoundBtn(text: '가입하기', uri: 'https://jayuvillage.com/auth/register', onTap: onTap),
       //   RoundBtn(color: Colors.white, textColor: Colors.orange, text: '↑', uri: 'top', onTap: onTap),
       // ],
     );

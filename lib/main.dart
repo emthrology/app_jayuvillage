@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
 
@@ -58,6 +59,7 @@ void permission() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // KakaoSdk.init(nativeAppKey: 'f768fc3addb5a2941abe952ea7ba8ca7');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
   );
@@ -72,22 +74,24 @@ void main() async {
 
         builder: (context, state){
           print('routed here');
-          return HomeScreen(homeUrl: Uri.parse('https://app.jayuvillage.com'));
+          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'));
         }
       ),
       GoRoute(
         path:'/posts/:id',
         builder: (context, state) {
+          print('$state.');
           final id = state.uri.queryParameters['id'];
-          return HomeScreen(homeUrl: Uri.parse('https://app.jayuvillage.com/posts/$id'));
+          print('id:$id');
+          return HomeScreen(homeUrl: state.uri);
         }
       ),
       GoRoute(
-        path:'/notices/id',
+        path:'/notices/:id',
         builder:(context, state) {
           final id = state.uri.queryParameters['id'];
           print(id);
-          return HomeScreen(homeUrl: Uri.parse('https://app.jayuvillage.com/notices/$id'));
+          return HomeScreen(homeUrl: state.uri);
         }
       )
     ]
@@ -95,7 +99,7 @@ void main() async {
   runApp(
     // MaterialApp(
     //     debugShowCheckedModeBanner: false, // 디버깅 모드 배너 끄기
-    //     home: HomeScreen(homeUrl: Uri.parse('https://app.jayuvillage.com'))
+    //     home: HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))
     // ),
     MaterialApp.router(
       routerConfig: goRouter,

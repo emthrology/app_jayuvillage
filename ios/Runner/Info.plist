@@ -26,21 +26,29 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>jayuvillage.com</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>https</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakaof768fc3addb5a2941abe952ea7ba8ca7</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
-	<key>CFBundleURLTypes</key>
-    <array>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>https</string>
-        </array>
-        <key>CFBundleURLName</key>
-        <string>app.jayuvillage.com</string>
-      </dict>
-    </array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<key>ITSAppUsesExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -48,6 +56,8 @@
 		<string>https</string>
 		<string>sms</string>
 		<string>tel</string>
+		<string>kakaokompassauth</string>
+		<string>kakaolink</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
@@ -55,6 +65,10 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+        <key>NSAllowsArbitraryLoadsForMedia</key>
+        <true/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>사진을 첨부하여 게시물을 등록하기 위해 카메라 권한을 요청합니다.</string>

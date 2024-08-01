@@ -58,6 +58,8 @@ dependencies:
   firebase_core:
   firebase_messaging:
   flutter_local_notifications: ^17.1.2
+  kakao_flutter_sdk: ^1.9.3
+  app_links: ^6.1.4
 dev_dependencies:
   logger: ^2.3.0
 #  flutter_launcher_icons: ^0.13.1

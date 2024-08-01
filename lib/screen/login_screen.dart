@@ -9,7 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../store/secure_storage.dart';
 
-final homeUrl = Uri.parse('https://app.jayuvillage.com');
+final homeUrl = Uri.parse('https://jayuvillage.com');
 
 class LoginScreen extends StatefulWidget {
   final WebViewController webController;
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
           print(ms.message);
         }
       })
-      ..loadRequest(Uri.parse('https://app.jayuvillage.com/auth/login'));
+      ..loadRequest(Uri.parse('https://jayuvillage.com/auth/login'));
   }
 
   @override
@@ -335,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) =>
-            HomeScreen(homeUrl: Uri.parse('https://app.jayuvillage.com'))));
+            HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
   }
 
   void _onCheckboxTapped(newVal) {
@@ -347,12 +347,12 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onRegisterTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => HomeScreen(
-            homeUrl: Uri.parse('https://app.jayuvillage.com/auth/register'))));
+            homeUrl: Uri.parse('https://jayuvillage.com/auth/register'))));
   }
   void _onPasswordChangeTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => HomeScreen(
-            homeUrl: Uri.parse('https://app.jayuvillage.com/auth/password'))));
+            homeUrl: Uri.parse('https://jayuvillage.com/auth/password'))));
   }
 
   void callApi() async {
