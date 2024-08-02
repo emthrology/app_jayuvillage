@@ -315,10 +315,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
         onPageFinished: (url) {
           print('finishedurl:$url');
-          _controller.runJavaScript('window.alert = function(e){alertChannel.postMessage(e)}');
           _setComponents(url);
-
-
           if (url.startsWith('https://jayuvillage.com/auth/login')) {
             // 컨트롤러를 초기화
             Navigator.of(context).push(MaterialPageRoute(
@@ -327,17 +324,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
       ))
       ..addJavaScriptChannel('thruFlutter', onMessageReceived: (JavaScriptMessage ms) {
-        String value = ms.message;
-        Fluttertoast.showToast(
-          msg: 'isFlutter:$value',
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Color(0xff8bf05d),
-          textColor: Colors.black,
-          fontSize: 24.0,
-
-        );
+        // String value = ms.message;
+        // Fluttertoast.showToast(
+        //   msg: 'isFlutter:$value',
+        //   toastLength: Toast.LENGTH_LONG,
+        //   gravity: ToastGravity.TOP,
+        //   timeInSecForIosWeb: 5,
+        //   backgroundColor: Color(0xff8bf05d),
+        //   textColor: Colors.black,
+        //   fontSize: 24.0,
+        //
+        // );
       })
       ..addJavaScriptChannel('alertChannel', onMessageReceived: (JavaScriptMessage ms) {
         Fluttertoast.showToast(
@@ -378,12 +375,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // print(ms.message);
             ms.message.contains('camera') ? _getImage(true) : _getImage(false);
           })
-      ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){
-        _launchURL(ms.message);
-      })
-      ..addJavaScriptChannel('flutterSetComponents', onMessageReceived: (JavaScriptMessage ms){
-        _setComponents(ms.message);
-      })
+      ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){_launchURL(ms.message);})
+      ..addJavaScriptChannel('flutterSetComponents', onMessageReceived: (JavaScriptMessage ms){_setComponents(ms.message);})
       ..addJavaScriptChannel('flutterShareBtn', onMessageReceived: (JavaScriptMessage ms){
         final decodedParams = jsonDecode(ms.message);
         var path = decodedParams['path'];
@@ -547,7 +540,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void setInitialBtnState() {
     session ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
   }
-
   bool isValidJson(String jsonString) {
     try {
       jsonDecode(jsonString);

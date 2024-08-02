@@ -54,11 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     String? token = await messaging.getToken();
 
-    // setState(() {
-    //   _fcmToken = token;
-    // });
     storeToken(token,userId);
-    print("FCM Token: $token");
+    // print("FCM Token: $token");
   }
 
   String? _validatePhone(String? value) {
