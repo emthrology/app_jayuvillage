@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } else {
       setQuickBtns('BEFORELOGIN');
     }
-    if (_quickBtnPages.any((e) => url.contains(e))) {
+    if (_quickBtnPages.any((e) => url.contains(e)) || url == 'https://jayuvillage.com/') {
       url.endsWith('create')
           ? _showQuickBtns = false
           : _showQuickBtns = true;
@@ -269,7 +269,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     final WebViewController controller =
     WebViewController.fromPlatformCreationParams(params);
-
+    // TODO 이거 커밋하면 큰일난다
+    // if (controller.platform is WebKitWebViewController) {
+    //   (controller.platform as WebKitWebViewController).setInspectable(true);
+    // }
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -308,14 +311,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             return NavigationDecision.navigate;
           }
         },
+        onUrlChange: (UrlChange change) {
+          var url = change.url.toString();
+          // print('changed:$url');
+          _setComponents(url);
+        },
         onPageStarted: (url) {
           setState(() {
             _hideBtnsFromWeb = false;
           });
         },
         onPageFinished: (url) {
-          print('finishedurl:$url');
-          _setComponents(url);
+
+          // _setComponents(url);
           if (url.startsWith('https://jayuvillage.com/auth/login')) {
             // 컨트롤러를 초기화
             Navigator.of(context).push(MaterialPageRoute(
