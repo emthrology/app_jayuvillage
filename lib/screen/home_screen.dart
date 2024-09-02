@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/quick_btns.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
 import 'package:webview_ex/screen/login_screen.dart';
+import 'package:webview_ex/screen/audio_screen.dart';
 import 'package:webview_ex/service/image_picker_service.dart';
 import 'package:webview_ex/service/url_launch_service.dart';
 import 'package:webview_ex/store/secure_storage.dart';
@@ -169,6 +170,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+  Future<void> _loadData() async {
+    await getValue('phone');
+    await getValue('password');
+    await getValue('session');
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (isValidJson(storedValue)) {
+        Map<String, dynamic> json = jsonDecode(storedValue);
+        setState(() {
+          session = json.containsKey('success') ? true : false;
+          _setComponents(_currentUrl.toString());
+          storedValue = '';
+        });
+      }
+    });
+  }
   void _setComponents(String url) {
     if (session) {
       setQuickBtns('AFTERLOGIN');
@@ -200,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _loadData();
     _firebaseSubscribe();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onMessage.listen((RemoteMessage? message) {
@@ -246,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }
       }
     });
-    _loadData();
+
     setInitialBtnState();
     if(pushedUrl == '') {
       _currentUrl = widget.homeUrl;
@@ -297,6 +314,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // handleAppLink(url);
             return NavigationDecision.prevent;
           }
+          if(request.url.endsWith('audioplayer')) {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => AudioScreen()));
+            return NavigationDecision.prevent;
+          }
           if (request.url.endsWith('login')) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => LoginScreen(webController: controller)));
@@ -313,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
         onUrlChange: (UrlChange change) {
           var url = change.url.toString();
-          // print('changed:$url');
+          _currentUrl = Uri.parse(url);
           _setComponents(url);
         },
         onPageStarted: (url) {
@@ -376,11 +398,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? _hideBtnsFromWeb = true
                   : _hideBtnsFromWeb = false;
             });
-            // print('_hideBtnsFromWeb:$_hideBtnsFromWeb');
           })
       ..addJavaScriptChannel('getImageFromFlutter',
           onMessageReceived: (JavaScriptMessage ms) {
-            // print(ms.message);
             ms.message.contains('camera') ? _getImage(true) : _getImage(false);
           })
       ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){_launchURL(ms.message);})
@@ -390,7 +410,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         var path = decodedParams['path'];
         var id = decodedParams['id'];
         shareUrlPath = '$path/$id';
-        print('shareBtnCalled');
         setQuickBtns('SHARE');
       })
       ..loadRequest(_currentUrl);
@@ -579,23 +598,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _loadData() async {
-    await getValue('phone');
-    await getValue('password');
-    await getValue('session');
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (isValidJson(storedValue)) {
-        Map<String, dynamic> json = jsonDecode(storedValue);
-        setState(() {
-          session = json.containsKey('success') ? true : false;
-          storedValue = '';
-        });
-      }
-    });
-  }
+
 
   Future<void> _launchURL(String url) async {
-    // print(url);
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {

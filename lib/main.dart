@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:webview_ex/screen/home_screen.dart';
+import 'package:webview_ex/service/audio_play_service.dart';
 import 'firebase_options.dart';
 
 import 'package:go_router/go_router.dart';
@@ -67,6 +68,7 @@ void main() async {
   if(true) {
     permission();
   }
+  await initAudioService();
   final goRouter = GoRouter(
     routes: [
       GoRoute(

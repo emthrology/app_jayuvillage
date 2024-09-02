@@ -4,6 +4,7 @@ class RoundBtn extends StatelessWidget {
   final Color color;
   final Color borderColor;
   final Color textColor;
+  final int lineLength;
   final String text;
   final String uri;
   final double fontSize;
@@ -11,17 +12,18 @@ class RoundBtn extends StatelessWidget {
 
   const RoundBtn(
       {super.key,
-      this.color = Colors.orange,
-      this.borderColor = Colors.orange,
-      this.textColor = Colors.white,
-      this.fontSize = 18.0,
-      required this.text,
-      required this.uri,
-      required this.onTap});
+        this.color = Colors.orange,
+        this.borderColor = Colors.orange,
+        this.textColor = Colors.white,
+        this.fontSize = 18.0,
+        required this.lineLength,
+        required this.text,
+        required this.uri,
+        required this.onTap});
 
-  String _formatText(String text) {
+  String _formatText(String text, int index) {
     if (text.length > 3) {
-      return '${text.substring(0, 2)}\n${text.substring(2)}';
+      return '${text.substring(0, index)}\n${text.substring(index)}';
     }
     return text;
   }
@@ -44,7 +46,7 @@ class RoundBtn extends StatelessWidget {
                 )),
             child: Center(
               child: Text(
-                _formatText(text),
+                _formatText(text,lineLength),
                 style: TextStyle(
                   color: textColor,
                   fontSize: fontSize,

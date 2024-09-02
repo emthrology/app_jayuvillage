@@ -505,8 +505,8 @@
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = MM8WPZUKLR;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.12;
-				FLUTTER_BUILD_NUMBER = 12;
+				FLUTTER_BUILD_NAME = 1.0.14;
+				FLUTTER_BUILD_NUMBER = 14;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "자유마을";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -700,8 +700,8 @@
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = MM8WPZUKLR;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.12;
-				FLUTTER_BUILD_NUMBER = 12;
+				FLUTTER_BUILD_NAME = 1.0.14;
+				FLUTTER_BUILD_NUMBER = 14;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "자유마을";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -729,8 +729,8 @@
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = MM8WPZUKLR;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.0.12;
-				FLUTTER_BUILD_NUMBER = 12;
+				FLUTTER_BUILD_NAME = 1.0.14;
+				FLUTTER_BUILD_NUMBER = 14;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "자유마을";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
