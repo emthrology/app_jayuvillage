@@ -39,18 +39,38 @@ class MyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   Future<void> loadEmptyPlaylist() async {
     try {
-      await player.setAudioSource(AudioSource.uri(
-        Uri.parse('https://ccrma.stanford.edu/~jos/mp3/harpsi-cs.mp3'),
-        tag: MediaItem(
-          // Specify a unique ID for each media item:
-          id: '1',
-          // Metadata to display in the notification:
-          album: "Album name",
-          title: "Song name",
-          artUri: Uri.parse(
-              'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.jpg'),
+      await player.setAudioSource(ConcatenatingAudioSource(children: [
+        AudioSource.uri(
+          Uri.parse(
+            "https://archive.org/download/IGM-V7/IGM%20-%20Vol.%207/25%20Diablo%20-%20Tristram%20%28Blizzard%29.mp3"),
+          tag: MediaItem(
+            id: '1',
+            title:'Song 1'
+          )
         ),
-      ));
+        AudioSource.uri(
+            Uri.parse(
+            "https://archive.org/download/igm-v8_202101/IGM%20-%20Vol.%208/15%20Pokemon%20Red%20-%20Cerulean%20City%20%28Game%20Freak%29.mp3"),
+            tag: MediaItem(id: '2', title: 'Song2')
+        ),
+        AudioSource.uri(
+            Uri.parse(
+            "https://scummbar.com/mi2/MI1-CD/01%20-%20Opening%20Themes%20-%20Introduction.mp3"),
+            tag: MediaItem(id: '3', title: 'Song3')
+        ),
+        AudioSource.uri(
+          Uri.parse('https://ccrma.stanford.edu/~jos/mp3/harpsi-cs.mp3'),
+          tag: MediaItem(
+            // Specify a unique ID for each media item:
+            id: '4',
+            // Metadata to display in the notification:
+            album: "Album name",
+            title: "Song name",
+            artUri: Uri.parse(
+                'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.jpg'),
+          ),
+        )
+      ]));
     } catch (e) {
       print("Error: $e");
     }
