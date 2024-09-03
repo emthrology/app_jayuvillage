@@ -48,7 +48,7 @@ post_install do |installer|
 
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
           '$(inherited)',
-
+            'AUDIO_SESSION_MICROPHONE=0',
           ## dart: PermissionGroup.calendar
           # 'PERMISSION_EVENTS=1',
 

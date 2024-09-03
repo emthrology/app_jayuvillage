@@ -8,6 +8,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_ex/component/mini_audio_player.dart';
 import 'package:webview_ex/component/quick_btns.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
 import 'package:webview_ex/screen/login_screen.dart';
@@ -37,7 +38,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  bool isTarget = false;
   late TabController tabController;
   late final WebViewController _controller;
   late Uri _currentUrl;
@@ -179,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Map<String, dynamic> json = jsonDecode(storedValue);
         setState(() {
           session = json.containsKey('success') ? true : false;
+          isTarget = json['success']?['id'] == 11;
           _setComponents(_currentUrl.toString());
           storedValue = '';
         });
@@ -450,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             _showQuickBtns && !_hideBtnsFromWeb
                 ? Positioned(
-                bottom: 20,
+                bottom: 70,
                 right: 20,
                 child: QuickBtns(
                   onTap: _onBtnTapped,
@@ -460,13 +462,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 : _currentUrl.toString() == 'https://jayuvillage.com' &&
                 !_hideBtnsFromWeb
                 ? Positioned(
-                bottom: 20,
+                bottom: 70,
                 right: 20,
                 child: QuickBtns(
                   onTap: _onBtnTapped,
                   btnData: btnData,
                 ))
-                : Container()
+                : Container(),
+            isTarget ?
+            Positioned(
+                bottom:0,
+                left: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Container(
+                    height:60,
+                    margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+
+                      boxShadow: [
+                        BoxShadow(
+                          color:Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset:Offset(0,2)
+                        )
+                      ]
+                    ),
+                    child: MiniAudioPlayer(),
+                  ),
+                )
+            ) : Container()
           ]),
         ),
         bottomNavigationBar: _showBottomNav

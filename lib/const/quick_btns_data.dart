@@ -14,7 +14,7 @@ final Map<String, List<Map<String, dynamic>>>  BTNDATA = {
 
   'AFTERLOGIN': [
     {'text': '글쓰기', 'uri': 'https://jayuvillage.com/posts/create'},
-    {'text': '광화문레코드', 'uri': 'https://jayuvillage.com/audioplayer'},
+    // {'text': '광화문레코드', 'uri': 'https://jayuvillage.com/audioplayer'},
     {
       'color': Colors.white,
       'textColor': Colors.orange,

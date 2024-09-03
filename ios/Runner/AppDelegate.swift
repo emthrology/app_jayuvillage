@@ -3,7 +3,7 @@ import Flutter
 import KakaoSDKCommon // 추가
 import KakaoSDKAuth
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
