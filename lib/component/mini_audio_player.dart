@@ -1,8 +1,11 @@
-import 'package:audio_service/audio_service.dart';
+
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-
-import '../service/audio_play_service.dart';
+import 'package:webview_ex/page_manager.dart';
+import '../service/dependency_injecter.dart';
+import '../notifiers/play_button_notifier.dart';
+import '../notifiers/repeat_button_notifier.dart';
 
 class MiniAudioPlayer extends StatefulWidget {
   const MiniAudioPlayer({super.key});
@@ -10,35 +13,20 @@ class MiniAudioPlayer extends StatefulWidget {
   @override
   State<MiniAudioPlayer> createState() => _MiniAudioPlayerState();
 }
+final pageManager = getIt<PageManager>();
 
 class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
-
   late AudioPlayer player;
   String currentTitle = '';
   @override
   void initState() {
     super.initState();
-    setupAudioPlayer();
-  }
-  void setupAudioPlayer() {
-    MyAudioHandler audioHandler = MyAudioHandler();
-    player = audioHandler.player;
-    player.setLoopMode(LoopMode.all);
-    // 현재 재생 중인 트랙의 제목을 업데이트
-    player.currentIndexStream.listen((index) {
-      if (index != null) {
-        final currentItem = player.sequence?[index];
-        if (currentItem != null) {
-          setState(() {
-            currentTitle = (currentItem.tag as MediaItem).title;
-          });
-        }
-      }
-    });
+    // _pageManager = PageManager();
+    // pageManager.setLoopMode(LoopMode.all);
   }
   @override
   void dispose() {
-    // player.dispose();
+    // _pageManager.dispose();
     super.dispose();
   }
   @override
@@ -60,76 +48,23 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
           child: Container(
             alignment: Alignment.centerLeft,
             // width: 160,
-            child: Text(currentTitle,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
+            child: ValueListenableBuilder<String>(
+                valueListenable: pageManager.currentSongTitleNotifier,
+                builder: (_, title,__) {return Text(title);}
+            )
           ),
         ),
         Expanded(
           flex: 1,
-          child: StreamBuilder<PlayerState>(
-            stream: player.playerStateStream,
-            builder: (_, snapshot) {
-              if(snapshot.hasData) {
-                final playerState = snapshot.data;
-                return _playPauseButton(playerState!);
-              }else {
-                return Center(
-                  child: SizedBox(
-                    width: 36.0,
-                    height: 36.0,
-                    child: CircularProgressIndicator(),
-                  )
-                );
-              }
-            },
-          ),
+          child: PlayButton()
         ),
         Expanded(
           flex: 1,
-          child: StreamBuilder<SequenceState?>(
-            stream: player.sequenceStateStream,
-            builder: (_, __) {
-              return _nextButton();
-            },
-          ),
+          child:
+            NextSongButton()
         ),
       ],
     );
-  }
-  Widget _playPauseButton(PlayerState playerState) {
-    final processingState = playerState.processingState;
-    if (processingState == ProcessingState.loading ||
-        processingState == ProcessingState.buffering) {
-      return Container(
-        width: 36.0,
-        height: 36.0,
-        child: CircularProgressIndicator(),
-      );
-    } else if (player.playing != true) {
-      return IconButton(
-        padding: EdgeInsets.only(bottom:2.0),
-        icon: Icon(Icons.play_arrow),
-        iconSize: 36.0,
-        onPressed: player.play,
-      );
-    } else if (processingState != ProcessingState.completed) {
-      return IconButton(
-        padding: EdgeInsets.only(bottom: 2.0),
-        icon: Icon(Icons.pause),
-        iconSize: 36.0,
-        onPressed: player.pause,
-      );
-    } else {
-      return IconButton(
-        padding: EdgeInsets.only(bottom: 2.0),
-        icon: Icon(Icons.replay),
-        iconSize: 36.0,
-        onPressed: () => player.seek(Duration.zero,
-            index: player.effectiveIndices?.first),
-      );
-    }
   }
   Widget _nextButton() {
     return IconButton(
@@ -137,6 +72,56 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       icon: Icon(Icons.fast_forward),
       iconSize: 36.0,
       onPressed: player.hasNext ? player.seekToNext : null,
+    );
+  }
+}
+
+class PlayButton extends StatelessWidget {
+  const PlayButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ButtonState>(
+      valueListenable: pageManager.playButtonNotifier,
+      builder: (_, value, __) {
+        switch (value) {
+          case ButtonState.loading:
+            return Container(
+              margin: EdgeInsets.all(8.0),
+              width: 32.0,
+              height: 32.0,
+              child: CircularProgressIndicator(),
+            );
+          case ButtonState.paused:
+            return IconButton(
+              icon: Icon(Icons.play_arrow),
+              iconSize: 32.0,
+              onPressed: pageManager.play,
+            );
+          case ButtonState.playing:
+            return IconButton(
+              icon: Icon(Icons.pause),
+              iconSize: 32.0,
+              onPressed:  pageManager.pause,
+            );
+        }
+      },
+    );
+  }
+}
+
+class NextSongButton extends StatelessWidget {
+  const NextSongButton({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<bool>(
+      valueListenable: pageManager.isLastSongNotifier,
+      builder: (_, isLast, __) {
+        return IconButton(
+          icon: const Icon(Icons.skip_next),
+          onPressed: (isLast) ? null : pageManager.next,
+        );
+      },
     );
   }
 }

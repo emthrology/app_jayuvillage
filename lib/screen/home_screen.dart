@@ -215,9 +215,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     }
   }
+
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
+  bool _isPlayerMinimized = false;
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+  void _togglePlayerVisibility() {
+    setState(() {
+      _isPlayerMinimized = !_isPlayerMinimized;
+      if (_isPlayerMinimized) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(0.83, 0), // 90%를 숨깁니다. 조정 가능합니다.
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
     _loadData();
     _firebaseSubscribe();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -469,35 +501,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   btnData: btnData,
                 ))
                 : Container(),
-            isTarget ?
+
             Positioned(
                 bottom:0,
                 left: 0,
                 right: 0,
                 child: GestureDetector(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
+                  onHorizontalDragEnd: (details) {
+                    if (details.primaryVelocity! < 0) {
+                      // 왼쪽으로 스와이프
+                      _togglePlayerVisibility();
+                    } else if (details.primaryVelocity! > 0) {
+                      // 오른쪽으로 스와이프
+                      _togglePlayerVisibility();
+                    }
                   },
-                  child: Container(
-                    height:60,
-                    margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Container(
+                      height:60,
+                      margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
 
-                      boxShadow: [
-                        BoxShadow(
-                          color:Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset:Offset(0,2)
-                        )
-                      ]
+                        boxShadow: [
+                          BoxShadow(
+                            color:Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset:Offset(0,2)
+                          )
+                        ]
+                      ),
+                      child: MiniAudioPlayer(),
                     ),
-                    child: MiniAudioPlayer(),
                   ),
                 )
-            ) : Container()
+            )
+
           ]),
         ),
         bottomNavigationBar: _showBottomNav
@@ -557,8 +599,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onBtnTapped(url) {
     if (url == 'top') {
       scrollToTop();
-    } else if(url == 'share') {
+    } else if (url == 'share') {
       _onShareWithResult('https://jayuvillage.com/$shareUrlPath');
+    } else if(url == 'audio_player') {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => AudioScreen()));
     }else {
       setState(() {
           _controller.loadRequest(Uri.parse(url));

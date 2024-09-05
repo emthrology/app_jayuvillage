@@ -1,10 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:webview_ex/notifiers/play_button_notifier.dart';
-import 'package:webview_ex/notifiers/progress_notifier.dart';
-import 'package:webview_ex/notifiers/repeat_button_notifier.dart';
+import 'package:flutter/foundation.dart';
+import 'notifiers/play_button_notifier.dart';
+import 'notifiers/progress_notifier.dart';
+import 'notifiers/repeat_button_notifier.dart';
+import 'package:audio_service/audio_service.dart';
+import 'service/playlist_repository.dart';
+import 'service/dependency_injecter.dart';
 
 class PageManager {
+  // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
   final playlistNotifier = ValueNotifier<List<String>>([]);
   final progressNotifier = ProgressNotifier();
@@ -14,48 +17,67 @@ class PageManager {
   final isLastSongNotifier = ValueNotifier<bool>(true);
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
 
-  late AudioPlayer _audioPlayer;
+  final _audioHandler = getIt<AudioHandler>();
 
-  PageManager() {
-    _init();
+  // Events: Calls coming from the UI
+  void init() async {
+    await _loadPlaylist();
+    _listenToChangesInPlaylist();
+    _listenToPlaybackState();
+    _listenToCurrentPosition();
+    _listenToBufferedPosition();
+    _listenToTotalDuration();
+    _listenToChangesInSong();
   }
 
-  void _init() async {
-    _audioPlayer = AudioPlayer();
-    _setInitialPlaylist();
-    _listenForChangesInPlayerState();
-    _listenForChangesInPlayerPosition();
-    _listenForChangesInBufferedPosition();
-    _listenForChangesInTotalDuration();
-    _listenForChangesInSequenceState();
+  Future<void> _loadPlaylist() async {
+    final songRepository = getIt<PlaylistRepository>();
+    final playlist = await songRepository.fetchInitialPlaylist();
+    final mediaItems = playlist
+        .map((song) => MediaItem(
+      id: song['id'] ?? '',
+      album: song['album'] ?? '',
+      title: song['title'] ?? '',
+      artUri: Uri.parse(song['artUri'] ?? ''),
+      extras: {'url': song['url']},
+    ))
+        .toList();
+    _audioHandler.addQueueItems(mediaItems);
   }
 
-  // TODO: set playlist
-  void _setInitialPlaylist() async {
-    const url = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3';
-    await _audioPlayer.setUrl(url);
+  void _listenToChangesInPlaylist() {
+    _audioHandler.queue.listen((playlist) {
+      if (playlist.isEmpty) {
+        playlistNotifier.value = [];
+        currentSongTitleNotifier.value = '';
+      } else {
+        final newList = playlist.map((item) => item.title).toList();
+        playlistNotifier.value = newList;
+      }
+      _updateSkipButtons();
+    });
   }
 
-  void _listenForChangesInPlayerState() {
-    _audioPlayer.playerStateStream.listen((playerState) {
-      final isPlaying = playerState.playing;
-      final processingState = playerState.processingState;
-      if (processingState == ProcessingState.loading ||
-          processingState == ProcessingState.buffering) {
+  void _listenToPlaybackState() {
+    _audioHandler.playbackState.listen((playbackState) {
+      final isPlaying = playbackState.playing;
+      final processingState = playbackState.processingState;
+      if (processingState == AudioProcessingState.loading ||
+          processingState == AudioProcessingState.buffering) {
         playButtonNotifier.value = ButtonState.loading;
       } else if (!isPlaying) {
         playButtonNotifier.value = ButtonState.paused;
-      } else if (processingState != ProcessingState.completed) {
+      } else if (processingState != AudioProcessingState.completed) {
         playButtonNotifier.value = ButtonState.playing;
       } else {
-        _audioPlayer.seek(Duration.zero);
-        _audioPlayer.pause();
+        _audioHandler.seek(Duration.zero);
+        _audioHandler.pause();
       }
     });
   }
 
-  void _listenForChangesInPlayerPosition() {
-    _audioPlayer.positionStream.listen((position) {
+  void _listenToCurrentPosition() {
+    AudioService.position.listen((position) {
       final oldState = progressNotifier.value;
       progressNotifier.value = ProgressBarState(
         current: position,
@@ -65,69 +87,104 @@ class PageManager {
     });
   }
 
-  void _listenForChangesInBufferedPosition() {
-    _audioPlayer.bufferedPositionStream.listen((bufferedPosition) {
+  void _listenToBufferedPosition() {
+    _audioHandler.playbackState.listen((playbackState) {
       final oldState = progressNotifier.value;
       progressNotifier.value = ProgressBarState(
         current: oldState.current,
-        buffered: bufferedPosition,
+        buffered: playbackState.bufferedPosition,
         total: oldState.total,
       );
     });
   }
 
-  void _listenForChangesInTotalDuration() {
-    _audioPlayer.durationStream.listen((totalDuration) {
+  void _listenToTotalDuration() {
+    _audioHandler.mediaItem.listen((mediaItem) {
       final oldState = progressNotifier.value;
       progressNotifier.value = ProgressBarState(
         current: oldState.current,
         buffered: oldState.buffered,
-        total: totalDuration ?? Duration.zero,
+        total: mediaItem?.duration ?? Duration.zero,
       );
     });
   }
 
-  void _listenForChangesInSequenceState() {
-    // TODO
+  void _listenToChangesInSong() {
+    _audioHandler.mediaItem.listen((mediaItem) {
+      currentSongTitleNotifier.value = mediaItem?.title ?? '';
+      _updateSkipButtons();
+    });
   }
 
-  void play() async {
-    _audioPlayer.play();
+  void _updateSkipButtons() {
+    final mediaItem = _audioHandler.mediaItem.value;
+    final playlist = _audioHandler.queue.value;
+    if (playlist.length < 2 || mediaItem == null) {
+      isFirstSongNotifier.value = true;
+      isLastSongNotifier.value = true;
+    } else {
+      isFirstSongNotifier.value = playlist.first == mediaItem;
+      isLastSongNotifier.value = playlist.last == mediaItem;
+    }
   }
 
-  void pause() {
-    _audioPlayer.pause();
+  void play() => _audioHandler.play();
+  void pause() => _audioHandler.pause();
+
+  void seek(Duration position) => _audioHandler.seek(position);
+
+  void previous() => _audioHandler.skipToPrevious();
+  void next() => _audioHandler.skipToNext();
+
+  void repeat() {
+    repeatButtonNotifier.nextState();
+    final repeatMode = repeatButtonNotifier.value;
+    switch (repeatMode) {
+      case RepeatState.off:
+        _audioHandler.setRepeatMode(AudioServiceRepeatMode.none);
+        break;
+      case RepeatState.repeatSong:
+        _audioHandler.setRepeatMode(AudioServiceRepeatMode.one);
+        break;
+      case RepeatState.repeatPlaylist:
+        _audioHandler.setRepeatMode(AudioServiceRepeatMode.all);
+        break;
+    }
   }
 
-  void seek(Duration position) {
-    _audioPlayer.seek(position);
+  void shuffle() {
+    final enable = !isShuffleModeEnabledNotifier.value;
+    isShuffleModeEnabledNotifier.value = enable;
+    if (enable) {
+      _audioHandler.setShuffleMode(AudioServiceShuffleMode.all);
+    } else {
+      _audioHandler.setShuffleMode(AudioServiceShuffleMode.none);
+    }
+  }
+
+  Future<void> add() async {
+    final songRepository = getIt<PlaylistRepository>();
+    final song = await songRepository.fetchAnotherSong();
+    final mediaItem = MediaItem(
+      id: song['id'] ?? '',
+      album: song['album'] ?? '',
+      title: song['title'] ?? '',
+      extras: {'url': song['url']},
+    );
+    _audioHandler.addQueueItem(mediaItem);
+  }
+
+  void remove() {
+    final lastIndex = _audioHandler.queue.value.length - 1;
+    if (lastIndex < 0) return;
+    _audioHandler.removeQueueItemAt(lastIndex);
   }
 
   void dispose() {
-    _audioPlayer.dispose();
+    _audioHandler.customAction('dispose');
   }
 
-  void onRepeatButtonPressed() {
-    // TODO
-  }
-
-  void onPreviousSongButtonPressed() {
-    // TODO
-  }
-
-  void onNextSongButtonPressed() {
-    // TODO
-  }
-
-  void onShuffleButtonPressed() async {
-    // TODO
-  }
-
-  void addSong() {
-    // TODO
-  }
-
-  void removeSong() {
-    // TODO
+  void stop() {
+    _audioHandler.stop();
   }
 }

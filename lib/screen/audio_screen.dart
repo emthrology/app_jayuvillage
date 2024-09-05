@@ -1,10 +1,14 @@
-import 'package:audio_service/audio_service.dart';
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:get_it/get_it.dart';
 
-import '../service/audio_play_service.dart';
 import 'home_screen.dart';
+import '../service/dependency_injecter.dart';
+import '../page_manager.dart';
+import '../notifiers/play_button_notifier.dart';
+import '../notifiers/progress_notifier.dart';
+import '../notifiers/repeat_button_notifier.dart';
 
 class AudioScreen extends StatefulWidget {
   const AudioScreen({super.key});
@@ -12,56 +16,22 @@ class AudioScreen extends StatefulWidget {
   @override
   State<AudioScreen> createState() => _AudioScreenState();
 }
+final pageManager = getIt<PageManager>();
 
 class _AudioScreenState extends State<AudioScreen> {
-  // final AudioPlayer player = AudioPlayer();
   late AudioPlayer player;
   String currentTitle = '';
 
   @override
   void initState() {
     super.initState();
-    setupAudioPlayer();
-  }
-
-  void setupAudioPlayer() {
-    MyAudioHandler audioHandler = MyAudioHandler();
-    player = audioHandler.player;
-
-    // 현재 재생 중인 트랙의 제목을 업데이트
-    player.currentIndexStream.listen((index) {
-      if (index != null) {
-        final currentItem = player.sequence?[index];
-        if (currentItem != null) {
-          setState(() {
-            currentTitle = (currentItem.tag as MediaItem).title;
-          });
-        }
-      }
-    });
+    // getIt<PageManager>().init();
   }
   @override
   void dispose() {
-    // player.dispose();
+    getIt<PageManager>().dispose();
     super.dispose();
   }
-
-  void _play() async {
-    try {
-      await player.play();
-    } catch (error, stackTrace) {
-      // Handle error
-    }
-  }
-
-  void _pause() async {
-    try {
-      await player.pause();
-    } catch (error, stackTrace) {
-      // Handle error
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,56 +54,11 @@ class _AudioScreenState extends State<AudioScreen> {
                                 child: Image.asset('asset/images/default_thumbnail.png',
                                   width: MediaQuery.of(context).size.width,
                                 )),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(currentTitle)
-
-                                  ],
-                                )
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                StreamBuilder<bool>(
-                                  stream: player.shuffleModeEnabledStream,
-                                  builder: (context, snapshot) {
-                                    return _shuffleButton(context, snapshot.data ?? false);
-                                  },
-                                ),
-                                StreamBuilder<SequenceState?>(
-                                  stream: player.sequenceStateStream,
-                                  builder: (_, __) {
-                                    return _previousButton();
-                                  },
-                                ),
-                                StreamBuilder<PlayerState>(
-                                  stream: player.playerStateStream,
-                                  builder: (_, snapshot) {
-                                    final playerState = snapshot.data;
-                                    return _playPauseButton(playerState!);
-                                  },
-                                ),
-                                StreamBuilder<SequenceState?>(
-                                  stream: player.sequenceStateStream,
-                                  builder: (_, __) {
-                                    return _nextButton();
-                                  },
-                                ),
-                                StreamBuilder<LoopMode>(
-                                  stream: player.loopModeStream,
-                                  builder: (context, snapshot) {
-                                    return _repeatButton(context, snapshot.data ?? LoopMode.off);
-                                  },
-                                ),
-                              ],
-                            ),
-
+                            CurrentSongTitle(),
+                            // Playlist(),
+                            // AddRemoveSongButtons(),
+                            AudioProgressBar(),
+                            AudioControlButtons(),
                           ],
                         )
                     )
@@ -166,82 +91,228 @@ class _AudioScreenState extends State<AudioScreen> {
         builder: (_) =>
             HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
   }
-  Widget _playPauseButton(PlayerState playerState) {
-    final processingState = playerState.processingState;
-    if (processingState == ProcessingState.loading ||
-        processingState == ProcessingState.buffering) {
-      return Container(
-        margin: EdgeInsets.all(8.0),
-        width: 64.0,
-        height: 64.0,
-        child: CircularProgressIndicator(),
-      );
-    } else if (player.playing != true) {
-      return IconButton(
-        icon: Icon(Icons.play_arrow),
-        iconSize: 64.0,
-        onPressed: player.play,
-      );
-    } else if (processingState != ProcessingState.completed) {
-      return IconButton(
-        icon: Icon(Icons.pause),
-        iconSize: 64.0,
-        onPressed: player.pause,
-      );
-    } else {
-      return IconButton(
-        icon: Icon(Icons.replay),
-        iconSize: 64.0,
-        onPressed: () => player.seek(Duration.zero,
-            index: player.effectiveIndices?.first),
-      );
-    }
-  }
-  Widget _shuffleButton(BuildContext context, bool isEnabled) {
-    return IconButton(
-      icon: isEnabled
-          ? Icon(Icons.shuffle, color: Theme.of(context).primaryColor)
-          : Icon(Icons.shuffle),
-      onPressed: () async {
-        final enable = !isEnabled;
-        if (enable) {
-          await player.shuffle();
-        }
-        await player.setShuffleModeEnabled(enable);
+}
+
+class CurrentSongTitle extends StatelessWidget {
+  const CurrentSongTitle({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<String>(
+      valueListenable: pageManager.currentSongTitleNotifier,
+      builder: (_, title, __) {
+        return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child:
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 28)),
+            ],
+          )
+
+        );
       },
     );
   }
-  Widget _previousButton() {
-    return IconButton(
-      icon: Icon(Icons.skip_previous),
-      onPressed: player.hasPrevious ? player.seekToPrevious : null,
+}
+
+class Playlist extends StatelessWidget {
+  const Playlist({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return Expanded(
+      child: ValueListenableBuilder<List<String>>(
+        valueListenable: pageManager.playlistNotifier,
+        builder: (context, playlistTitles, _) {
+          return ListView.builder(
+            itemCount: playlistTitles.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(playlistTitles[index]),
+              );
+            },
+          );
+        },
+      ),
     );
   }
+}
 
-  Widget _nextButton() {
-    return IconButton(
-      icon: Icon(Icons.skip_next),
-      onPressed: player.hasNext ? player.seekToNext : null,
+class AddRemoveSongButtons extends StatelessWidget {
+  const AddRemoveSongButtons({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FloatingActionButton(
+            onPressed: pageManager.add,
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            onPressed: pageManager.remove,
+            child: const Icon(Icons.remove),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  Widget _repeatButton(BuildContext context, LoopMode loopMode) {
-    final icons = [
-      Icon(Icons.repeat),
-      Icon(Icons.repeat, color: Theme.of(context).primaryColor),
-      Icon(Icons.repeat_one, color: Theme.of(context).primaryColor),
-    ];
-    const cycleModes = [
-      LoopMode.off,
-      LoopMode.all,
-      LoopMode.one,
-    ];
-    final index = cycleModes.indexOf(loopMode);
-    return IconButton(
-      icon: icons[index],
-      onPressed: () {
-        player.setLoopMode(
-            cycleModes[(cycleModes.indexOf(loopMode) + 1) % cycleModes.length]);
+class AudioProgressBar extends StatelessWidget {
+  const AudioProgressBar({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<ProgressBarState>(
+      valueListenable: pageManager.progressNotifier,
+      builder: (_, value, __) {
+        return ProgressBar(
+          progress: value.current,
+          buffered: value.buffered,
+          total: value.total,
+          onSeek: pageManager.seek,
+        );
+      },
+    );
+  }
+}
+
+class AudioControlButtons extends StatelessWidget {
+  const AudioControlButtons({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 60,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          RepeatButton(),
+          PreviousSongButton(),
+          PlayButton(),
+          NextSongButton(),
+          ShuffleButton(),
+        ],
+      ),
+    );
+  }
+}
+
+class RepeatButton extends StatelessWidget {
+  const RepeatButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<RepeatState>(
+      valueListenable: pageManager.repeatButtonNotifier,
+      builder: (context, value, child) {
+        Icon icon;
+        switch (value) {
+          case RepeatState.off:
+            icon = const Icon(Icons.repeat, color: Colors.grey);
+            break;
+          case RepeatState.repeatSong:
+            icon = const Icon(Icons.repeat_one);
+            break;
+          case RepeatState.repeatPlaylist:
+            icon = const Icon(Icons.repeat);
+            break;
+        }
+        return IconButton(
+          icon: icon,
+          onPressed: pageManager.repeat,
+        );
+      },
+    );
+  }
+}
+
+class PreviousSongButton extends StatelessWidget {
+  const PreviousSongButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<bool>(
+      valueListenable: pageManager.isFirstSongNotifier,
+      builder: (_, isFirst, __) {
+        return IconButton(
+          icon: const Icon(Icons.skip_previous),
+          onPressed: (isFirst) ? null : pageManager.previous,
+        );
+      },
+    );
+  }
+}
+
+class PlayButton extends StatelessWidget {
+  const PlayButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ButtonState>(
+      valueListenable: pageManager.playButtonNotifier,
+      builder: (_, value, __) {
+        switch (value) {
+          case ButtonState.loading:
+            return Container(
+              margin: EdgeInsets.all(8.0),
+              width: 32.0,
+              height: 32.0,
+              child: CircularProgressIndicator(),
+            );
+          case ButtonState.paused:
+            return IconButton(
+              icon: Icon(Icons.play_arrow),
+              iconSize: 32.0,
+              onPressed: pageManager.play,
+            );
+          case ButtonState.playing:
+            return IconButton(
+              icon: Icon(Icons.pause),
+              iconSize: 32.0,
+              onPressed: pageManager.pause,
+            );
+        }
+      },
+    );
+  }
+}
+
+class NextSongButton extends StatelessWidget {
+  const NextSongButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<bool>(
+      valueListenable: pageManager.isLastSongNotifier,
+      builder: (_, isLast, __) {
+        return IconButton(
+          icon: const Icon(Icons.skip_next),
+          onPressed: (isLast) ? null : pageManager.next,
+        );
+      },
+    );
+  }
+}
+
+class ShuffleButton extends StatelessWidget {
+  const ShuffleButton({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+    return ValueListenableBuilder<bool>(
+      valueListenable: pageManager.isShuffleModeEnabledNotifier,
+      builder: (context, isEnabled, child) {
+        return IconButton(
+          icon: (isEnabled)
+              ? const Icon(Icons.shuffle)
+              : const Icon(Icons.shuffle, color: Colors.grey),
+          onPressed: pageManager.shuffle,
+        );
       },
     );
   }

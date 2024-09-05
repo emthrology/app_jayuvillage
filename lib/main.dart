@@ -1,23 +1,25 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
 
+// import 'package:get_it/get_it.dart';
+import 'service/dependency_injecter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:webview_ex/screen/home_screen.dart';
-import 'package:webview_ex/service/audio_play_service.dart';
 import 'firebase_options.dart';
 
 import 'package:go_router/go_router.dart';
+
+import 'service/dependency_injecter.dart';
+import 'page_manager.dart';
 
 var logger = Logger(
   filter: null, // Use the default LogFilter (-> only log in debug mode)
   printer: PrettyPrinter(), // Use the PrettyPrinter to format and print log
   output: null, // Use the default LogOutput (-> send everything to console)
 );
+
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage rm) async {
   await Firebase.initializeApp();
@@ -57,10 +59,12 @@ void permission() async {
     print('User declined or has not accepted permission');
   }
 }
-
+late PageManager pageManager;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // KakaoSdk.init(nativeAppKey: 'f768fc3addb5a2941abe952ea7ba8ca7');
+  await setupServiceLocator();
+  getIt<PageManager>().init();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
   );
@@ -68,7 +72,6 @@ void main() async {
   if(true) {
     permission();
   }
-  await initAudioService();
   final goRouter = GoRouter(
     routes: [
       GoRoute(
