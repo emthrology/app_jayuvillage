@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class SearchComponent extends StatefulWidget {
-  const SearchComponent({super.key});
+class StorageScreen extends StatefulWidget {
+  const StorageScreen({super.key});
 
   @override
-  State<SearchComponent> createState() => _SearchComponentState();
+  State<StorageScreen> createState() => _StorageScreenState();
 }
 
-class _SearchComponentState extends State<SearchComponent>  {
+class _StorageScreenState extends State<StorageScreen>  {
 
 
   @override
@@ -24,7 +24,7 @@ class _SearchComponentState extends State<SearchComponent>  {
           child: Stack(
             children: [
               Center(
-                child: Text('검색 스크린'),
+                child: Text('보관함 스크린'),
               ),
             ],
           )
