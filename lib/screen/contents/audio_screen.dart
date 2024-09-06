@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:get_it/get_it.dart';
 
-import 'home_screen.dart';
-import '../service/dependency_injecter.dart';
-import '../page_manager.dart';
-import '../notifiers/play_button_notifier.dart';
-import '../notifiers/progress_notifier.dart';
-import '../notifiers/repeat_button_notifier.dart';
+import '../home_screen.dart';
+import '../../service/dependency_injecter.dart';
+import '../../page_manager.dart';
+import '../../notifiers/play_button_notifier.dart';
+import '../../notifiers/progress_notifier.dart';
+import '../../notifiers/repeat_button_notifier.dart';
 
 class AudioScreen extends StatefulWidget {
   const AudioScreen({super.key});

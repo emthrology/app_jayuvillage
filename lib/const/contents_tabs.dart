@@ -10,7 +10,7 @@ class TabInfo {
   });
 }
 
-final TABS = [
+final CONTENTSTABS = [
   TabInfo(
     icon: Icons.home_outlined,
     label: '홈',
@@ -20,19 +20,11 @@ final TABS = [
     label: '컨텐츠',
   ),
   TabInfo(
-    icon: Icons.important_devices,
-    label: '조직활동',
+    icon: Icons.folder_copy_sharp,
+    label: '보관함',
   ),
   TabInfo(
-    icon: Icons.maps_home_work_outlined,
-    label: '마을소식',
+    icon: Icons.search,
+    label: '검색',
   ),
-  TabInfo(
-    icon: Icons.chat,
-    label: '채팅',
-  ),
-  // TabInfo(
-  //   icon: Icons.person_outline,
-  //   label: '내 정보',
-  // ),
 ];
