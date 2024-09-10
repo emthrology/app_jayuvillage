@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/page_manager.dart';
+import '../screen/contents/audio_screen.dart';
 import '../service/dependency_injecter.dart';
 import '../notifiers/play_button_notifier.dart';
 import '../notifiers/repeat_button_notifier.dart';
@@ -13,9 +14,10 @@ class MiniAudioPlayer extends StatefulWidget {
   @override
   State<MiniAudioPlayer> createState() => _MiniAudioPlayerState();
 }
-final pageManager = getIt<PageManager>();
 
 class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
+  final pageManager = getIt<PageManager>();
+
   late AudioPlayer player;
   String currentTitle = '';
   @override
@@ -38,20 +40,50 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
           flex: 1,
           child: Container(
             alignment: Alignment.centerLeft,
-            child: Image.asset('asset/images/default_thumbnail.png',
-              // width: 40
+            child: ValueListenableBuilder<String>(
+              valueListenable: pageManager.currentSongArtUriNotifier,
+              builder: (_, artUri, __) {
+                return artUri.isNotEmpty
+                    ? Image.network(
+                  artUri,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'asset/images/default_thumbnail.png',
+                      width: 40,
+                      height: 40,
+                    );
+                  },
+                )
+                    : Image.asset(
+                  'asset/images/default_thumbnail.png',
+                  width: 40,
+                  height: 40,
+                );
+              },
             ),
           ),
         ),
         Expanded(
           flex: 4,
-          child: Container(
-            alignment: Alignment.centerLeft,
-            // width: 160,
-            child: ValueListenableBuilder<String>(
-                valueListenable: pageManager.currentSongTitleNotifier,
-                builder: (_, title,__) {return Text(title);}
-            )
+          child: GestureDetector(
+            onTap:() {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => AudioScreen()
+                )
+              );
+            },
+            child: Container(
+              alignment: Alignment.centerLeft,
+              // width: 160,
+              child: ValueListenableBuilder<String>(
+                  valueListenable: pageManager.currentSongTitleNotifier,
+                  builder: (_, title,__) {return Text(title);}
+              )
+            ),
           ),
         ),
         Expanded(
@@ -118,7 +150,7 @@ class NextSongButton extends StatelessWidget {
       valueListenable: pageManager.isLastSongNotifier,
       builder: (_, isLast, __) {
         return IconButton(
-          icon: const Icon(Icons.skip_next),
+          icon: const Icon(Icons.fast_forward),
           onPressed: (isLast) ? null : pageManager.next,
         );
       },

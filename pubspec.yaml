@@ -62,6 +62,7 @@ dependencies:
   kakao_flutter_sdk: ^1.9.3
   app_links: ^6.1.4
 
+  youtube_player_flutter: ^9.0.3
   just_audio: ^0.9.39
   audio_service: ^0.18.15
   audio_video_progress_bar: ^2.0.3

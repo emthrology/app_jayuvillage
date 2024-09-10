@@ -2,6 +2,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:webview_ex/screen/contents/contents_index_screen.dart';
 
 import '../home_screen.dart';
 import '../../service/dependency_injecter.dart';
@@ -16,6 +17,7 @@ class AudioScreen extends StatefulWidget {
   @override
   State<AudioScreen> createState() => _AudioScreenState();
 }
+
 final pageManager = getIt<PageManager>();
 
 class _AudioScreenState extends State<AudioScreen> {
@@ -27,91 +29,116 @@ class _AudioScreenState extends State<AudioScreen> {
     super.initState();
     // getIt<PageManager>().init();
   }
+
   @override
   void dispose() {
-    getIt<PageManager>().dispose();
+    // pageManager.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         body: SafeArea(
             child: Stack(
-              children: [
-                GestureDetector(
-                    onTap: () {
-                      FocusScope.of(context).unfocus();
-                    },
-                    child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 36.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                                alignment: Alignment.topCenter,
-                                child: Image.asset('asset/images/default_thumbnail.png',
-                                  width: MediaQuery.of(context).size.width,
-                                )),
-                            CurrentSongTitle(),
-                            // Playlist(),
-                            // AddRemoveSongButtons(),
-                            AudioProgressBar(),
-                            AudioControlButtons(),
-                          ],
-                        )
-                    )
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Semantics(
-                        label: '뒤로가기',
-                        hint: '이전 화면으로 가기 위해 누르세요',
-                        child: GestureDetector(
-                          onTap: _onTapped,
-                          child: Row(
-                              children:[
-                                Icon(
-                                  Icons.arrow_back_ios_new,
-                                  size: 32.0,
+          children: [
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 36.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      alignment: Alignment.topCenter,
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: pageManager.currentSongArtUriNotifier,
+                        builder: (_, artUri, __) {
+                          return artUri.isNotEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.symmetric(vertical:32.0),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                      maxHeight: MediaQuery.of(context).size.height * 0.75,
+                                  ),
+                                  child: Image.network(
+                                    artUri,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        'asset/images/default_thumbnail.png',
+                                        width:
+                                            MediaQuery.of(context).size.width ,
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ]),),)],),
-                ),
-              ],
-            )
-        )
-    );
+                              )
+                              : Image.asset(
+                                'asset/images/default_thumbnail.png',
+                                width: MediaQuery.of(context).size.width,
+                              );
+                        },
+                      ),
+                    ),
+                    CurrentSongTitle(),
+                    // AddRemoveSongButtons(),
+                    AudioProgressBar(),
+                    AudioControlButtons(),
+                    Playlist(),
+
+                  ],
+                )),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Semantics(
+                    label: '뒤로가기',
+                    hint: '이전 화면으로 가기 위해 누르세요',
+                    child: GestureDetector(
+                      onTap: _onTapped,
+                      child: Row(children: [
+                        Icon(
+                          Icons.arrow_back_ios_new,
+                          size: 32.0,
+                        ),
+                      ]),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
+        )));
   }
+
   void _onTapped() {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) =>
-            HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
+    // Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (_) => ContentsIndexScreen()
+    // ));
+    Navigator.of(context).pop(); //
   }
 }
 
 class CurrentSongTitle extends StatelessWidget {
   const CurrentSongTitle({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<String>(
       valueListenable: pageManager.currentSongTitleNotifier,
       builder: (_, title, __) {
         return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child:
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 28)),
-            ],
-          )
-
-        );
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 28)),
+              ],
+            ));
       },
     );
   }
@@ -119,9 +146,9 @@ class CurrentSongTitle extends StatelessWidget {
 
 class Playlist extends StatelessWidget {
   const Playlist({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return Expanded(
       child: ValueListenableBuilder<List<String>>(
         valueListenable: pageManager.playlistNotifier,
@@ -131,6 +158,8 @@ class Playlist extends StatelessWidget {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(playlistTitles[index]),
+                onTap: () => pageManager.skipToQueueItem(index),
+                selected: index == pageManager.currentSongTitleNotifier.value,
               );
             },
           );
@@ -142,9 +171,9 @@ class Playlist extends StatelessWidget {
 
 class AddRemoveSongButtons extends StatelessWidget {
   const AddRemoveSongButtons({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: Row(
@@ -166,9 +195,9 @@ class AddRemoveSongButtons extends StatelessWidget {
 
 class AudioProgressBar extends StatelessWidget {
   const AudioProgressBar({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<ProgressBarState>(
       valueListenable: pageManager.progressNotifier,
       builder: (_, value, __) {
@@ -185,6 +214,7 @@ class AudioProgressBar extends StatelessWidget {
 
 class AudioControlButtons extends StatelessWidget {
   const AudioControlButtons({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -205,9 +235,9 @@ class AudioControlButtons extends StatelessWidget {
 
 class RepeatButton extends StatelessWidget {
   const RepeatButton({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<RepeatState>(
       valueListenable: pageManager.repeatButtonNotifier,
       builder: (context, value, child) {
@@ -234,9 +264,9 @@ class RepeatButton extends StatelessWidget {
 
 class PreviousSongButton extends StatelessWidget {
   const PreviousSongButton({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<bool>(
       valueListenable: pageManager.isFirstSongNotifier,
       builder: (_, isFirst, __) {
@@ -251,6 +281,7 @@ class PreviousSongButton extends StatelessWidget {
 
 class PlayButton extends StatelessWidget {
   const PlayButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ButtonState>(
@@ -284,9 +315,9 @@ class PlayButton extends StatelessWidget {
 
 class NextSongButton extends StatelessWidget {
   const NextSongButton({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<bool>(
       valueListenable: pageManager.isLastSongNotifier,
       builder: (_, isLast, __) {
@@ -300,10 +331,10 @@ class NextSongButton extends StatelessWidget {
 }
 
 class ShuffleButton extends StatelessWidget {
-  const ShuffleButton({Key? key}) : super(key: key);
+  const ShuffleButton({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
     return ValueListenableBuilder<bool>(
       valueListenable: pageManager.isShuffleModeEnabledNotifier,
       builder: (context, isEnabled, child) {

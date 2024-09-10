@@ -12,7 +12,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<AudioHandler>(await initAudioService());
 
   // services
-  getIt.registerLazySingleton<PlaylistRepository>(() => DemoPlaylist());
+  getIt.registerLazySingleton<PlaylistRepository>(() => Playlist());
 
   // page state
   getIt.registerLazySingleton<PageManager>(() => PageManager());

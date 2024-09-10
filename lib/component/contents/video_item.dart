@@ -21,9 +21,12 @@ class VideoItem extends StatelessWidget {
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10.0)
                 ),
-                child: Image.asset(
-                  item['imageUrl'],
-                  fit: BoxFit.cover,
+                child: AspectRatio(
+                  aspectRatio: 16/9,
+                  child: Image.network(
+                    item['imageUrl'],
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
 

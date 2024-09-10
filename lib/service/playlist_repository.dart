@@ -1,33 +1,44 @@
+// playlist_repository.dart
 abstract class PlaylistRepository {
-  Future<List<Map<String, String>>> fetchInitialPlaylist();
-  Future<Map<String, String>> fetchAnotherSong();
+  Future<List<Map<String, dynamic>>> fetchInitialPlaylist();
+  Future<Map<String, dynamic>> fetchAnotherSong();
+  void updateMusicItems(List<Map<String, dynamic>> items);
 }
 
-class DemoPlaylist extends PlaylistRepository {
+class Playlist extends PlaylistRepository {
+  List<Map<String, dynamic>> _playlistItems = [];
+
   @override
-  Future<List<Map<String, String>>> fetchInitialPlaylist(
-      {int length = 3}) async {
-    return List.generate(length, (index) => _nextSong());
+  void updateMusicItems(List<Map<String, dynamic>> items) {
+    _playlistItems = items;
   }
 
   @override
-  Future<Map<String, String>> fetchAnotherSong() async {
-    return _nextSong();
+  Future<List<Map<String, dynamic>>> fetchInitialPlaylist({int length = 3}) async {
+    if (_playlistItems.isEmpty) {
+      return [];
+    }
+    final itemCount = length < _playlistItems.length ? length : _playlistItems.length;
+    return List.generate(itemCount, (index) => _convertToPlaylistItem(_playlistItems[index]));
   }
 
-  var _songIndex = 0;
-  static const _maxSongNumber = 16;
+  @override
+  Future<Map<String, dynamic>> fetchAnotherSong() async {
+    if (_playlistItems.isEmpty) {
+      throw Exception('No more songs available');
+    }
+    return _convertToPlaylistItem(_playlistItems[_songIndex++ % _playlistItems.length]);
+  }
 
-  Map<String, String> _nextSong() {
-    _songIndex = (_songIndex % _maxSongNumber) + 1;
+  int _songIndex = 0;
+
+  Map<String, dynamic> _convertToPlaylistItem(Map<String, dynamic> item) {
     return {
-      'id': _songIndex.toString().padLeft(3, '0'),
-      'title': 'Song $_songIndex',
-      'album': 'SoundHelix',
-      'url':
-      'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-$_songIndex.mp3',
-      'artUri':'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.jpg'
-    //   TODO : artUrl 추가
+      'id': item['id'].toString(),
+      'title': item['title'] ?? 'Unknown Title',
+      'album': item['album'] ?? 'Unknown Album',
+      'url': item['audioUrl'] ?? '',
+      'artUri': item['imageUrl'] ?? 'asset/images/default_thumbnail.png',
     };
   }
 }

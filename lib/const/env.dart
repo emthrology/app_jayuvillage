@@ -1,0 +1,1 @@
+const String BASE_URL = 'https://api.jayuvillage.com/api';

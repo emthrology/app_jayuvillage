@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../component/contents/music_item.dart';
+import '../../component/contents/news_item.dart';
 import '../../component/contents/podcast_item.dart';
 import '../../component/contents/video_item.dart';
+import '../../const/contents/content_type.dart';
+import '../../page_manager.dart';
+import '../../service/api_service.dart';
+import '../../service/dependency_injecter.dart';
 
 class ContentsScreen extends StatefulWidget {
   const ContentsScreen({super.key});
@@ -11,51 +16,74 @@ class ContentsScreen extends StatefulWidget {
   State<ContentsScreen> createState() => _ContentsScreenState();
 }
 
-enum ContentType { video, podcast, music, news }
 
 class _ContentsScreenState extends State<ContentsScreen>  {
-  Map<ContentType, int> itemCounts = {
-    ContentType.video: 3,
-    ContentType.podcast: 5,
-    ContentType.music: 5,
-    ContentType.news: 5,
-  };
-  final List<Map<String, dynamic>> videoItems = List.generate(
-    3,
-    (index) => {
-      'imageUrl': 'asset/images/upset.png',
-      'title': '광화문애가'
-    },
-  );
-  final List<Map<String, dynamic>> podcastItems = List.generate(
-    5,
-    (index) => {
-      'imageUrl':'asset/images/pngegg.png',
-      'title':'[날짜] 오늘의 이슈',
-      'subtitle':'자유마을과 함께하는 라디오타임',
-      'isLive':true,
-      'listerCount': 1700,
-      'startTime': '14:00',
-      'endTime': ''
-    },
-  );
-  final List<Map<String, dynamic>> musicItems = List.generate(
-    5,
-    (index) => {
-      'imageUrl':'asset/images/music_jacket.png',
-      'title':'광화문애가',
-      'album':'광화문애가',
-      'viewCount': 170000000,
-      'shareCount': 23000,
-      'subtitle':'눈물주의, 광화문에 한번이라도 나온 국민에게 위로가 되는 노래',
-    }
-  );
+  final _pageManager = getIt<PageManager>();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+  List<Map<String, dynamic>> videoItems = [];
+  List<Map<String, dynamic>> podcastItems = [];
+  List<Map<String, dynamic>> musicItems = [];
+  List<Map<String, dynamic>> newsItems = [];
   @override
   void initState() {
     super.initState();
-
+    _loadAllItems();
   }
+  Future<void> _loadAllItems() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final videoData = await _apiService.fetchItems(endpoint:'audios',query:'category',value:'video');
+      final podcastData = await _apiService.fetchItems(endpoint:'audios',query:'category',value:'podcast');
+      final musicData = await _apiService.fetchItems(endpoint: 'audios',query: 'category',value: 'music');
+      final newsData = await _apiService.fetchItems(endpoint: 'audios',query: 'category',value: 'news');
+      setState(() {
+        videoItems = _mapItems(videoData, ContentType.video);
+        podcastItems = _mapItems(podcastData, ContentType.podcast);
+        musicItems = _mapItems(musicData, ContentType.music);
+        newsItems = _mapItems(newsData, ContentType.news);
+        _isLoading = false;
+        // PlaylistRepository 업데이트
+      }); // UI 업데이트를 위해 setState 호출
+      // await _pageManager.updatePlaylist(podcastItems);
+      await _pageManager.setLastMusicItem(musicItems[0]);
+    } catch (e) {
+      print('Error loading items: $e');
+      // 에러 처리 로직 추가 (예: 사용자에게 알림 표시)
+    }finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  List<Map<String, dynamic>> _mapItems(List<dynamic> apiData, ContentType type) {
+    return apiData.map((item) => {
+      'type': type,
+      'id': item['id'] ?? 0,
+      'opening': item['openinig'] ?? 0,
+      'imageUrl': item['audio_thumbnail'] ?? 'asset/images/upset.png',
+      'title': item['title'] ?? '',
+      'subtitle': item['content'] ?? '',
+      'listerCount': item['view_count'] ?? '',
+      'viewCount': item['view_count'] ?? 0,
+      'shareCount': item['share_count'] ?? 0,
+      'likeCount': item['like_count'] ?? 0,
+      'isLike': item['is_like'] == 1,
+      'audioUrl': item['audio_url'] ?? '',
+      'file': item['file'] ?? '',
 
+      'isLive': item['live_status'] == 1 ? true : false,
+      'startTime' : item['startTime'] ?? '14:00',
+      'endTime' : item['endTime'] ?? '',
+
+      'album': item['title'] ?? '',
+
+      'createdAt': item['created_at'] ?? '',
+      'diffAt': item['diff_at'] ?? '',
+    }).toList();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,12 +106,15 @@ class _ContentsScreenState extends State<ContentsScreen>  {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildSection('뮤직비디오', ContentType.video),
-                    _buildSection('팟케스트', ContentType.podcast),
-                    _buildSection('추천음악', ContentType.music),
-                  ],
+                child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  :ListView(
+                    children: [
+                      _buildSection('뮤직비디오', ContentType.video),
+                      _buildSection('팟케스트', ContentType.podcast),
+                      _buildSection('추천음악', ContentType.music),
+                      _buildSection('정치·시사·뉴스', ContentType.news)
+                    ],
                 )
               ),
             ] 
@@ -106,7 +137,7 @@ class _ContentsScreenState extends State<ContentsScreen>  {
         items = podcastItems;
         break;
       case ContentType.news:
-        items = podcastItems;
+        items = newsItems;
         break;
     }
     return Column(
@@ -127,21 +158,24 @@ class _ContentsScreenState extends State<ContentsScreen>  {
               return PodcastItem(item: item);
             case ContentType.music:
               return MusicItem(item: item);
+            case ContentType.news:
+              return NewsItem(item: item);
             default:
               return SizedBox.shrink();
           }
-        }).toList(),
-        Padding(
-          padding: const EdgeInsets.only(top:8.0),
-          child: Center(
-            child: ElevatedButton(
-              onPressed: () {
-                // 더보기 버튼 클릭 시 로직 추가
-              },
-              child: Text('$title 더보기'),
+        }),
+        if(items.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top:8.0),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // 더보기 버튼 클릭 시 로직 추가
+                },
+                child: Text('$title 더보기'),
+              ),
             ),
           ),
-        ),
         SizedBox(height: 32), // 섹션 간 여백
       ],
     );

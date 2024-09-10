@@ -1,0 +1,1 @@
+enum ContentType { video, podcast, music, news }
