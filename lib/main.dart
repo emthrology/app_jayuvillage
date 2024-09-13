@@ -12,7 +12,7 @@ import 'firebase_options.dart';
 import 'package:go_router/go_router.dart';
 
 import 'service/dependency_injecter.dart';
-import 'page_manager.dart';
+import 'service/player_manager.dart';
 
 var logger = Logger(
   filter: null, // Use the default LogFilter (-> only log in debug mode)
@@ -59,11 +59,11 @@ void permission() async {
     print('User declined or has not accepted permission');
   }
 }
-late PageManager pageManager;
+late PlayerManager pageManager;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
-  getIt<PageManager>().init();
+  getIt<PlayerManager>().init();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform

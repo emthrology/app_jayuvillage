@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../page_manager.dart';
+import '../../service/player_manager.dart';
 import '../../service/dependency_injecter.dart';
 
 class MusicItem extends StatelessWidget {
   MusicItem({super.key, required this.item});
-  final _pageManager = getIt<PageManager>();
+  final _pageManager = getIt<PlayerManager>();
   final Map<String, dynamic> item;
   final double radius = 10.0;
   final double titleSize = 24.0;
@@ -24,7 +24,7 @@ class MusicItem extends StatelessWidget {
               Image.network(
                 item['imageUrl'],
                 fit: BoxFit.cover,
-                width: 108.0,
+                width: 84.0,
               ),
               Expanded(
                 child: Padding(

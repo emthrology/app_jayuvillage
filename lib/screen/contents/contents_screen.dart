@@ -5,7 +5,7 @@ import '../../component/contents/news_item.dart';
 import '../../component/contents/podcast_item.dart';
 import '../../component/contents/video_item.dart';
 import '../../const/contents/content_type.dart';
-import '../../page_manager.dart';
+import '../../service/player_manager.dart';
 import '../../service/api_service.dart';
 import '../../service/dependency_injecter.dart';
 
@@ -18,7 +18,7 @@ class ContentsScreen extends StatefulWidget {
 
 
 class _ContentsScreenState extends State<ContentsScreen>  {
-  final _pageManager = getIt<PageManager>();
+  final _playerManager = getIt<PlayerManager>();
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   List<Map<String, dynamic>> videoItems = [];
@@ -35,20 +35,20 @@ class _ContentsScreenState extends State<ContentsScreen>  {
       _isLoading = true;
     });
     try {
-      final videoData = await _apiService.fetchItems(endpoint:'audios',query:'category',value:'video');
-      final podcastData = await _apiService.fetchItems(endpoint:'audios',query:'category',value:'podcast');
-      final musicData = await _apiService.fetchItems(endpoint: 'audios',query: 'category',value: 'music');
-      final newsData = await _apiService.fetchItems(endpoint: 'audios',query: 'category',value: 'news');
+      final videoData = await _apiService.fetchItems(endpoint:'audios',queries:{'category':'video'});
+      final podcastData = await _apiService.fetchItems(endpoint:'audios',queries:{'category':'podcast'});
+      final musicData = await _apiService.fetchItems(endpoint: 'audios',queries:{'category':'music'});
+      // final newsData = await _apiService.fetchItems(endpoint: 'audios',queries:{'category':'news'});
       setState(() {
         videoItems = _mapItems(videoData, ContentType.video);
         podcastItems = _mapItems(podcastData, ContentType.podcast);
         musicItems = _mapItems(musicData, ContentType.music);
-        newsItems = _mapItems(newsData, ContentType.news);
+        // newsItems = _mapItems(newsData, ContentType.news);
         _isLoading = false;
         // PlaylistRepository 업데이트
       }); // UI 업데이트를 위해 setState 호출
       // await _pageManager.updatePlaylist(podcastItems);
-      await _pageManager.setLastMusicItem(musicItems[0]);
+      await _playerManager.setLastMusicItem(musicItems[0]);
     } catch (e) {
       print('Error loading items: $e');
       // 에러 처리 로직 추가 (예: 사용자에게 알림 표시)
@@ -100,7 +100,7 @@ class _ContentsScreenState extends State<ContentsScreen>  {
                 child: Text(
                   '컨텐츠',
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 36,
                     fontWeight: FontWeight.w900,
                   ),
                 ),

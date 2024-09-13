@@ -27,12 +27,12 @@ final TABS = [
     icon: Icons.maps_home_work_outlined,
     label: '마을소식',
   ),
-  TabInfo(
-    icon: Icons.chat,
-    label: '채팅',
-  ),
   // TabInfo(
-  //   icon: Icons.person_outline,
-  //   label: '내 정보',
+  //   icon: Icons.chat,
+  //   label: '채팅',
   // ),
+  TabInfo(
+    icon: Icons.person_outline,
+    label: '내 정보',
+  ),
 ];

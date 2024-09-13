@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'notifiers/play_button_notifier.dart';
-import 'notifiers/progress_notifier.dart';
-import 'notifiers/repeat_button_notifier.dart';
+import '../notifiers/play_button_notifier.dart';
+import '../notifiers/progress_notifier.dart';
+import '../notifiers/repeat_button_notifier.dart';
 import 'package:audio_service/audio_service.dart';
-import 'service/playlist_repository.dart';
-import 'service/dependency_injecter.dart';
+import 'playlist_repository.dart';
+import 'dependency_injecter.dart';
 
-class PageManager {
+class PlayerManager {
   // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
   // 현재 곡의 artUri를 위한 새로운 ValueNotifier 추가
@@ -21,7 +21,7 @@ class PageManager {
   final playlistLengthNotifier = ValueNotifier<int>(0);
 
   final _audioHandler = getIt<AudioHandler>();
-
+  MediaItem? _currentMediaItem;
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
@@ -54,7 +54,7 @@ class PageManager {
     _audioHandler.addQueueItems(mediaItems);
   }
   //TODO 보관함 불러올 때 사용
-  Future<void> updatePlaylist(List<Map<String, dynamic>> musicItems) async {
+  Future<void> updatePlaylist(List<dynamic> musicItems) async {
     // 기존 큐 비우기
     final currentQueue = _audioHandler.queue.value;
     for (var i = currentQueue.length - 1; i >= 0; i--) {
@@ -67,7 +67,7 @@ class PageManager {
       album: song['album'] ?? '',
       title: song['title'] ?? '',
       artUri: Uri.parse(song['imageUrl'] ?? ''),
-      extras: {'url': song['file']},
+      extras: {'url': song['audioUrl']},
     )).toList();
 
     await _audioHandler.addQueueItems(mediaItems);
@@ -116,7 +116,20 @@ class PageManager {
       album: item['album'] ?? '',
       title: item['title'] ?? '',
       artUri: Uri.parse(item['imageUrl'] ?? ''),
-      extras: {'url': item['file']},
+      extras: {
+        'url': item['audioUrl'],
+        'subtitle': item['subtitle'] ?? '',
+        'listerCount': item['listerCount'] ?? '',
+        'viewCount': item['viewCount'] ?? 0,
+        'shareCount': item['shareCount'] ?? 0,
+        'likeCount': item['likeCount'] ?? 0,
+        'isLike': item['isLike'] ?? false,
+        'isLive': item['isLive'] ?? false,
+        'startTime': item['startTime'] ?? '',
+        'endTime': item['endTime'] ?? '',
+        'createdAt': item['createdAt'] ?? '',
+        'diffAt': item['diffAt'] ?? '',
+      },
     );
 
     await _audioHandler.addQueueItem(mediaItem);
@@ -165,10 +178,18 @@ class PageManager {
 
   void _listenToChangesInSong() {
     _audioHandler.mediaItem.listen((mediaItem) {
+      _currentMediaItem = mediaItem; // 현재 재생 중인 MediaItem 저장
       currentSongTitleNotifier.value = mediaItem?.title ?? '재생중이 아님';
       currentSongArtUriNotifier.value = mediaItem?.artUri?.toString() ?? '';
       _updateSkipButtons();
     });
+  }
+  MediaItem? getCurrentMediaItem() {
+    // currentSongTitleNotifier의 값이 특정 문자열이 아닐 때만 MediaItem 반환
+    if (currentSongTitleNotifier.value != '' && currentSongTitleNotifier.value != '재생중이 아님') {
+      return _currentMediaItem;
+    }
+    return null;
   }
 
   void _updateSkipButtons() {

@@ -1,7 +1,9 @@
 
 import 'package:audio_service/audio_service.dart';
+import 'package:webview_ex/store/store_service.dart';
 
-import '../page_manager.dart';
+import '../store/secure_storage.dart';
+import 'player_manager.dart';
 import 'audio_handler.dart';
 import 'playlist_repository.dart';
 import 'package:get_it/get_it.dart';
@@ -15,6 +17,11 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<PlaylistRepository>(() => Playlist());
 
   // page state
-  getIt.registerLazySingleton<PageManager>(() => PageManager());
+  getIt.registerLazySingleton<PlayerManager>(() => PlayerManager());
+
+  // store state
+  getIt.registerLazySingleton<StoreService>(() => StoreService());
+
+  getIt.registerLazySingleton<SecureStorage>(() => SecureStorage());
 
 }

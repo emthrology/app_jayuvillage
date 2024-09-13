@@ -3,32 +3,47 @@ import '../../const/contents/content_type.dart';
 import '../shaped_icon_button.dart';
 
 class ListItem extends StatelessWidget {
-  const ListItem({super.key,
-    required this.item, this.onMoveUp, this.onMoveDown,});
+  const ListItem({
+    super.key,
+    required this.isEditMode,
+    required this.item,
+    this.onMoveUp,
+    this.onMoveDown,
+    this.onDelete
+  });
+
   final Map<String, dynamic> item;
+  final bool isEditMode;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
+  final VoidCallback? onDelete;
 
   final double _radius = 10.0;
   final double _titleSize = 24.0;
   final double _fontSize = 18.0;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top:4.0),
+      padding: const EdgeInsets.only(top: 4.0),
       child: Card(
         color: Colors.white,
-
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Image.asset(
-                item['imageUrl'],
-                fit: BoxFit.cover,
-                width: 96.0,
-              ),
+              item['imageUrl'] == null
+                  ? Image.asset(
+                      'asset/images/default_thumbnail.png',
+                      fit: BoxFit.cover,
+                      width: 96.0,
+                    )
+                  : Image.network(
+                      item['imageUrl'],
+                      fit: BoxFit.cover,
+                      width: 84.0,
+                    ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -41,8 +56,7 @@ class ListItem extends StatelessWidget {
                             fontSize: _titleSize,
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                            overflow: TextOverflow.ellipsis
-                        ),
+                            overflow: TextOverflow.ellipsis),
                       ),
                       Text(
                         _getContentTypeLabel(item),
@@ -55,35 +69,37 @@ class ListItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ShapedIconButton(
-                    width:32,
-                    icon:Icon(Icons.arrow_upward_sharp, size:20.0),
-                    onPressed: onMoveUp,
-                  ),
-                  SizedBox(width:4),
-                  ShapedIconButton(
-                    width:32,
-                    icon:Icon(Icons.arrow_downward_sharp, size:20.0),
-                    onPressed: onMoveDown,
-                  ),
-                  SizedBox(width:4),
-                  ShapedIconButton(
-                    width:32,
-                    icon:Icon(Icons.delete_outline_outlined, size:20.0),
-                    onPressed: () {  },
-                  ),
-                ],
-              )
+              if (isEditMode)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ShapedIconButton(
+                      width: 32,
+                      icon: Icon(Icons.arrow_upward_sharp, size: 20.0),
+                      onPressed: onMoveUp,
+                    ),
+                    SizedBox(width: 4),
+                    ShapedIconButton(
+                      width: 32,
+                      icon: Icon(Icons.arrow_downward_sharp, size: 20.0),
+                      onPressed: onMoveDown,
+                    ),
+                    SizedBox(width: 4),
+                    ShapedIconButton(
+                      width: 32,
+                      icon: Icon(Icons.delete_outline_outlined, size: 20.0),
+                      onPressed: onDelete,
+                    ),
+                  ],
+                )
             ],
           ),
         ),
       ),
     );
   }
+
   String formatNumber(int number) {
     String numStr = number.toString();
     int length = numStr.length;
@@ -123,4 +139,6 @@ class ListItem extends StatelessWidget {
         return '';
     }
   }
+
+
 }

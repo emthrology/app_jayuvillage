@@ -62,14 +62,20 @@ class _NewPlaylistModalState extends State<NewPlaylistModal> {
                     Navigator.pop(context);
                   }
                       : null,
-                  child: Text('생성', style: TextStyle(fontSize: 18.0)),
+                  child: Text('생성', style: TextStyle(fontSize: 18.0, color: Color(0xff0baf00))),
                 ),
               ],
             ),
             TextField(
               controller: _controller,
+              style: TextStyle(
+                fontSize: 18.0,
+              ),
               decoration: InputDecoration(
                 labelText: '재생목록 제목',
+                  labelStyle: TextStyle(
+                    fontSize: 20.0,
+                  )
               ),
             ),
             // 다른 UI 요소 추가 가능

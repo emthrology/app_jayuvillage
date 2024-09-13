@@ -48,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         )
     );
+    // print('2222');
     print(response.data.toString());
   }
   void _getFCMToken(userId) async {

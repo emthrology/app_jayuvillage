@@ -18,7 +18,7 @@ class NewsItem extends StatelessWidget {
             Image.asset(
               item['imageUrl'],
               fit: BoxFit.cover,
-              width: 108.0,
+              width: 84.0,
             ),
             Expanded(
               child: Padding(

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../page_manager.dart';
+import '../../service/player_manager.dart';
 import '../../service/dependency_injecter.dart';
 
 class PodcastItem extends StatelessWidget {
   PodcastItem({super.key, required this.item});
   final Map<String, dynamic> item;
-  final _pageManager = getIt<PageManager>();
+  final _pageManager = getIt<PlayerManager>();
   final double radius = 10.0;
   final double titleSize = 24.0;
   final double fontSize = 18.0;
@@ -29,7 +29,7 @@ class PodcastItem extends StatelessWidget {
                   Image.network(
                     item['imageUrl'],
                     fit: BoxFit.cover,
-                    width: 108.0,
+                    width: 84.0,
                   ),
                   if(isLive)
                     Container(

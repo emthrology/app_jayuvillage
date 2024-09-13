@@ -2,7 +2,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:webview_ex/page_manager.dart';
+import 'package:webview_ex/service/player_manager.dart';
 import '../screen/contents/audio_screen.dart';
 import '../service/dependency_injecter.dart';
 import '../notifiers/play_button_notifier.dart';
@@ -16,7 +16,7 @@ class MiniAudioPlayer extends StatefulWidget {
 }
 
 class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
-  final pageManager = getIt<PageManager>();
+  final pageManager = getIt<PlayerManager>();
 
   late AudioPlayer player;
   String currentTitle = '';
@@ -113,7 +113,7 @@ class PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ButtonState>(
-      valueListenable: pageManager.playButtonNotifier,
+      valueListenable: playerManager.playButtonNotifier,
       builder: (_, value, __) {
         switch (value) {
           case ButtonState.loading:
@@ -127,13 +127,13 @@ class PlayButton extends StatelessWidget {
             return IconButton(
               icon: Icon(Icons.play_arrow),
               iconSize: 32.0,
-              onPressed: pageManager.play,
+              onPressed: playerManager.play,
             );
           case ButtonState.playing:
             return IconButton(
               icon: Icon(Icons.pause),
               iconSize: 32.0,
-              onPressed:  pageManager.pause,
+              onPressed:  playerManager.pause,
             );
         }
       },
@@ -145,7 +145,7 @@ class NextSongButton extends StatelessWidget {
   const NextSongButton({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PageManager>();
+    final pageManager = getIt<PlayerManager>();
     return ValueListenableBuilder<bool>(
       valueListenable: pageManager.isLastSongNotifier,
       builder: (_, isLast, __) {
