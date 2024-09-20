@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/component/contents/list_item.dart';
+import 'package:webview_ex/component/white_button.dart';
 import '../../../service/api_service.dart';
 import '../../../service/dependency_injecter.dart';
 import '../../../service/player_manager.dart';
@@ -215,15 +216,16 @@ class _PlaylistModalState extends State<PlaylistModal>
           fontSize: 22.0
       );
     }
-;
     _playerManager.updatePlaylist(selectedPlaylist);
     // TODO: Implement play logic for selectedPlaylist
     print('Selected items: ${selectedPlaylist.length}');
+    Navigator.pop(context);
   }
 
   void _playAll() {
     _playerManager.updatePlaylist(playlistItems);
     print('play all items: ${playlistItems.length}');
+    Navigator.pop(context);
   }
   @override
   void dispose() {
@@ -260,10 +262,12 @@ class _PlaylistModalState extends State<PlaylistModal>
                   ),
                   SizedBox(
                     width: 250,
-                    child: Text(
-                      widget.item['title'] ?? '새 재생목록',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
+                    child: Center(
+                      child: Text(
+                        widget.item['title'] ?? '새 재생목록',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                   TextButton(
@@ -313,7 +317,7 @@ class _PlaylistModalState extends State<PlaylistModal>
                     : SizedBox.shrink(),
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.9 - 180, //TODO handle this
+                height: MediaQuery.of(context).size.height * 0.9 - 180,
                 child: ListView.builder(
                   itemCount: playlistItems.length,
                   itemBuilder: (context, index) {
@@ -357,18 +361,28 @@ class _PlaylistModalState extends State<PlaylistModal>
                       : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          _playSelected();
-                        },
-                        child: Text('선택 재생'),
+                      WhiteButton(
+                          onTap: () {_playSelected();},
+                          size: Size(50, 50),
+                          title: '선택 재생'
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          _playAll();
-                        },
-                        child: Text('전체 재생'),
-                      ),
+                      WhiteButton(
+                          onTap: () {_playAll();},
+                          size: Size(50, 50),
+                          title: '전체 재생'
+                      )
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     _playSelected();
+                      //   },
+                      //   child: Text('선택 재생'),
+                      // ),
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     _playAll();
+                      //   },
+                      //   child: Text('전체 재생'),
+                      // ),
                     ],
                   ),
                 ),

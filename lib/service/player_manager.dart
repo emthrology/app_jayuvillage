@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import '../notifiers/play_button_notifier.dart';
 import '../notifiers/progress_notifier.dart';
 import '../notifiers/repeat_button_notifier.dart';
@@ -19,8 +20,9 @@ class PlayerManager {
   final isLastSongNotifier = ValueNotifier<bool>(true);
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
   final playlistLengthNotifier = ValueNotifier<int>(0);
-
+  final currentMediaItemNotifier = ValueNotifier<MediaItem?>(null);
   final _audioHandler = getIt<AudioHandler>();
+  final _extractor = YoutubeAudioUrlExtractor();
   MediaItem? _currentMediaItem;
   // Events: Calls coming from the UI
   void init() async {
@@ -36,25 +38,44 @@ class PlayerManager {
     repeatButtonNotifier.value = RepeatState.repeatPlaylist;
   }
   Map<String, dynamic>? _lastMusicItem;
+  void updateCurrentMediaItem(MediaItem? mediaItem) {
+    currentMediaItemNotifier.value = mediaItem;
+  }
   Future<void> setLastMusicItem(Map<String, dynamic> item) async {
     _lastMusicItem = item;
   }
   Future<void> _loadPlaylist() async {
     final songRepository = getIt<PlaylistRepository>();
     final playlist = await songRepository.fetchInitialPlaylist();
-    final mediaItems = playlist
-        .map((song) => MediaItem(
-      id: song['id'] ?? 0,
-      album: song['album'] ?? '',
-      title: song['title'] ?? '',
-      artUri: Uri.parse(song['artUri'] ?? ''),
-      extras: {'url': song['url']},
-    ))
-        .toList();
+    // 새로운 아이템 추가
+    final mediaItems = await Future.wait(
+        playlist.map((song) => _createMediaItem(song))
+    );
+    // final mediaItems = playlist
+    //     .map((song) => MediaItem(
+    //   id: song['id'] ?? 0,
+    //   album: song['album'] ?? '',
+    //   title: song['title'] ?? '',
+    //   artUri: Uri.parse(song['artUri'] ?? ''),
+    //   extras: {
+    //     'url': _getAudioUrl(song['audioUrl'] as String),
+    //     'subtitle': song['subtitle'] ?? '',
+    //     'listerCount': song['listerCount'] ?? '',
+    //     'viewCount': song['viewCount'] ?? 0,
+    //     'shareCount': song['shareCount'] ?? 0,
+    //     'likeCount': song['likeCount'] ?? 0,
+    //     'isLike': song['isLike'] ?? false,
+    //     'isLive': song['isLive'] ?? false,
+    //     'startTime': song['startTime'] ?? '',
+    //     'endTime': song['endTime'] ?? '',
+    //     'createdAt': song['createdAt'] ?? '',
+    //     'diffAt': song['diffAt'] ?? '',
+    //   },
+    // )).toList();
     _audioHandler.addQueueItems(mediaItems);
   }
-  //TODO 보관함 불러올 때 사용
-  Future<void> updatePlaylist(List<dynamic> musicItems) async {
+
+  Future<void> updatePlaylist(List musicItems) async {
     // 기존 큐 비우기
     final currentQueue = _audioHandler.queue.value;
     for (var i = currentQueue.length - 1; i >= 0; i--) {
@@ -62,22 +83,101 @@ class PlayerManager {
     }
 
     // 새로운 아이템 추가
-    final mediaItems = musicItems.map((song) => MediaItem(
-      id: song['id'].toString(),
-      album: song['album'] ?? '',
-      title: song['title'] ?? '',
-      artUri: Uri.parse(song['imageUrl'] ?? ''),
-      extras: {'url': song['audioUrl']},
-    )).toList();
-
+    final mediaItems = await Future.wait(
+        musicItems.map((song) => _createMediaItem(song))
+    );
     await _audioHandler.addQueueItems(mediaItems);
 
     // 플레이리스트 업데이트 후 필요한 추가 작업
     _updateSkipButtons();
     if (mediaItems.isNotEmpty) {
       currentSongTitleNotifier.value = mediaItems.first.title;
+      _audioHandler.play();
     }
   }
+
+  Future<void> addAndPlayItem(Map item) async {
+    final mediaItem = await _createMediaItem(item);
+    await _audioHandler.addQueueItem(mediaItem);
+    final queue = _audioHandler.queue.value;
+    final index = queue.indexOf(mediaItem);
+    if (index != -1) {
+      await _audioHandler.skipToQueueItem(index);
+      await _audioHandler.play();
+    }
+  }
+  //TODO 보관함 불러올 때 사용
+
+  // Future<void> updatePlaylist(List<dynamic> musicItems) async {
+  //
+  //   final currentQueue = _audioHandler.queue.value;
+  //   for (var i = currentQueue.length - 1; i >= 0; i--) {
+  //     await _audioHandler.removeQueueItemAt(i);
+  //   }
+  //
+  //
+  //   final mediaItems = musicItems.map((song) => MediaItem(
+  //     id: song['id'].toString(),
+  //     album: song['album'] ?? '',
+  //     title: song['title'] ?? '',
+  //     artUri: Uri.parse(song['imageUrl'] ?? ''),
+  //     extras: {
+  //       'url': _getAudioUrl(song['audioUrl'] as String),
+  //       'subtitle': song['subtitle'] ?? '',
+  //       'listerCount': song['listerCount'] ?? '',
+  //       'viewCount': song['viewCount'] ?? 0,
+  //       'shareCount': song['shareCount'] ?? 0,
+  //       'likeCount': song['likeCount'] ?? 0,
+  //       'isLike': song['isLike'] ?? false,
+  //       'isLive': song['isLive'] ?? false,
+  //       'startTime': song['startTime'] ?? '',
+  //       'endTime': song['endTime'] ?? '',
+  //       'createdAt': song['createdAt'] ?? '',
+  //       'diffAt': song['diffAt'] ?? '',
+  //     },
+  //   )).toList();
+  //
+  //   await _audioHandler.addQueueItems(mediaItems);
+  //
+  //
+  //   _updateSkipButtons();
+  //   if (mediaItems.isNotEmpty) {
+  //     currentSongTitleNotifier.value = mediaItems.first.title;
+  //   }
+  // }
+
+  // Future<void> addAndPlayItem(Map<String, dynamic> item) async {
+  //   final mediaItem = MediaItem(
+  //     id: item['id'].toString(),
+  //     album: item['album'] ?? '',
+  //     title: item['title'] ?? '',
+  //     artUri: Uri.parse(item['imageUrl'] ?? ''),
+  //     extras: {
+  //       'url': await _getAudioUrl(item['audioUrl']),
+  //       'subtitle': item['subtitle'] ?? '',
+  //       'listerCount': item['listerCount'] ?? '',
+  //       'viewCount': item['viewCount'] ?? 0,
+  //       'shareCount': item['shareCount'] ?? 0,
+  //       'likeCount': item['likeCount'] ?? 0,
+  //       'isLike': item['isLike'] ?? false,
+  //       'isLive': item['isLive'] ?? false,
+  //       'startTime': item['startTime'] ?? '',
+  //       'endTime': item['endTime'] ?? '',
+  //       'createdAt': item['createdAt'] ?? '',
+  //       'diffAt': item['diffAt'] ?? '',
+  //     },
+  //   );
+  //
+  //   await _audioHandler.addQueueItem(mediaItem);
+  //   await Future.delayed(Duration(milliseconds: 500)); // 잠시 대기
+  //   final queue = _audioHandler.queue.value;
+  //   final index = queue.indexOf(mediaItem);
+  //   if (index != -1) {
+  //     await _audioHandler.skipToQueueItem(index);
+  //     await _audioHandler.play();
+  //   }
+  // }
+
   void _listenToChangesInPlaylist() {
     _audioHandler.queue.listen((playlist) {
       if (playlist.isEmpty) {
@@ -109,36 +209,6 @@ class PlayerManager {
         _audioHandler.pause();
       }
     });
-  }
-  Future<void> addAndPlayItem(Map<String, dynamic> item) async {
-    final mediaItem = MediaItem(
-      id: item['id'].toString(),
-      album: item['album'] ?? '',
-      title: item['title'] ?? '',
-      artUri: Uri.parse(item['imageUrl'] ?? ''),
-      extras: {
-        'url': item['audioUrl'],
-        'subtitle': item['subtitle'] ?? '',
-        'listerCount': item['listerCount'] ?? '',
-        'viewCount': item['viewCount'] ?? 0,
-        'shareCount': item['shareCount'] ?? 0,
-        'likeCount': item['likeCount'] ?? 0,
-        'isLike': item['isLike'] ?? false,
-        'isLive': item['isLive'] ?? false,
-        'startTime': item['startTime'] ?? '',
-        'endTime': item['endTime'] ?? '',
-        'createdAt': item['createdAt'] ?? '',
-        'diffAt': item['diffAt'] ?? '',
-      },
-    );
-
-    await _audioHandler.addQueueItem(mediaItem);
-    final queue = _audioHandler.queue.value;
-    final index = queue.indexOf(mediaItem);
-    if (index != -1) {
-      await _audioHandler.skipToQueueItem(index);
-      await _audioHandler.play();
-    }
   }
   void skipToQueueItem(int index) {
     _audioHandler.skipToQueueItem(index);
@@ -179,6 +249,7 @@ class PlayerManager {
   void _listenToChangesInSong() {
     _audioHandler.mediaItem.listen((mediaItem) {
       _currentMediaItem = mediaItem; // 현재 재생 중인 MediaItem 저장
+      updateCurrentMediaItem(mediaItem);
       currentSongTitleNotifier.value = mediaItem?.title ?? '재생중이 아님';
       currentSongArtUriNotifier.value = mediaItem?.artUri?.toString() ?? '';
       _updateSkipButtons();
@@ -210,11 +281,16 @@ class PlayerManager {
     }
   }
 
-  void play() {
-    if (playlistLengthNotifier.value == 0 && _lastMusicItem != null) {
-      addAndPlayItem(_lastMusicItem!);
-    } else if (playlistLengthNotifier.value > 0) {
-      _audioHandler.play();
+  void play() async {
+    try {
+      if (playlistLengthNotifier.value == 0 && _lastMusicItem != null) {
+        await addAndPlayItem(_lastMusicItem!);
+      } else if (playlistLengthNotifier.value > 0) {
+        await _audioHandler.play();
+      }
+    } catch (e, stackTrace) {
+      print('Error playing audio: $e');
+      print('Stack trace: $stackTrace');
     }
   }
   void pause() => _audioHandler.pause();
@@ -222,12 +298,16 @@ class PlayerManager {
   void seek(Duration position) => _audioHandler.seek(position);
 
   void previous() {
-    if(playlistLengthNotifier.value > 0)
+    if(playlistLengthNotifier.value > 0) {
       _audioHandler.skipToPrevious();
+    }
   }
   void next() {
-    if(playlistLengthNotifier.value > 0)
+    if(playlistLengthNotifier.value > 0) {
+      updateCurrentMediaItem(_currentMediaItem);
       _audioHandler.skipToNext();
+    }
+
   }
 
   void repeat() {
@@ -281,4 +361,37 @@ class PlayerManager {
   void stop() {
     _audioHandler.stop();
   }
+
+  Future<MediaItem> _createMediaItem(Map song) async {
+    return MediaItem(
+      id: song['id'].toString(),
+      album: song['album'] ?? '',
+      title: song['title'] ?? '',
+      artUri: Uri.parse(song['imageUrl'] ?? ''),
+      extras: {
+        'url': await _getAudioUrl(song['audioUrl']),
+        'subtitle': song['subtitle'] ?? '',
+        'listerCount': song['listerCount'] ?? '',
+        'viewCount': song['viewCount'] ?? 0,
+        'shareCount': song['shareCount'] ?? 0,
+        'likeCount': song['likeCount'] ?? 0,
+        'isLike': song['isLike'] ?? false,
+        'isLive': song['isLive'] ?? false,
+        'startTime': song['startTime'] ?? '',
+        'endTime': song['endTime'] ?? '',
+        'createdAt': song['createdAt'] ?? '',
+        'diffAt': song['diffAt'] ?? '',
+      },
+    );
+  }
+
+  Future<String> _getAudioUrl(String url) async {
+    print('before:$url');
+    if (url.contains('youtube')) {
+      url = await _extractor.getAudioUrl(url);
+    }
+    // print('audioUrl:$url');
+    return url;
+  }
+
 }

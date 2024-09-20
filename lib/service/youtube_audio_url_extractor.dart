@@ -1,11 +1,15 @@
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 class YoutubeAudioUrlExtractor {
-  Future<String> getAudioUrl(String videoId) async {
+  Future<String> getAudioUrl(String youtubeUrl) async {
     final yt = YoutubeExplode();
-    final manifest = await yt.videos.streamsClient.getManifest(videoId);
-    final audioStreamInfo = manifest.audioOnly.withHighestBitrate();
-    final audioUrl = audioStreamInfo.url.toString();
-    print('audioUrl:${audioUrl}');
-    return audioUrl;
+    try {
+      final video = await yt.videos.get(youtubeUrl);
+      final manifest = await yt.videos.streamsClient.getManifest(video.id);
+      final audioOnlyStreams = manifest.audioOnly;
+      final streamInfo = audioOnlyStreams.withHighestBitrate();
+      return streamInfo.url.toString();
+    } finally {
+      yt.close();
+    }
   }
 }

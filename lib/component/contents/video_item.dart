@@ -34,7 +34,7 @@ class VideoItem extends StatelessWidget {
                     aspectRatio: 16/9,
                     child: Image.network(
                       item['imageUrl'],
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -61,13 +61,15 @@ class VideoItem extends StatelessWidget {
                         children: [
                           Text(
                             item['title'],
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 24,
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          Text('광화문레코드 · 조회수 2.7억 · 공유 3.7만', style: TextStyle(
+                          Text('광화문레코드 · 조회수 ${formatNumber(item['viewCount'])} · 공유 ${formatNumber(item['shareCount'])}', style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.w700
                           ),),
                         ],
@@ -97,5 +99,29 @@ class VideoItem extends StatelessWidget {
         ),
       ),
     );
+  }
+  String formatNumber(int number) {
+    String numStr = number.toString();
+    int length = numStr.length;
+
+    double formattedNumber;
+    String unit;
+
+    if (length > 8) {
+      formattedNumber = number / 100000000;
+      unit = '억';
+    } else if (length > 4) {
+      formattedNumber = number / 10000;
+      unit = '만';
+    } else if (length > 3) {
+      formattedNumber = number / 1000;
+      unit = '천';
+    } else {
+      return numStr;
+    }
+
+    return formattedNumber % 1 == 0
+        ? '${formattedNumber.toInt()}$unit'
+        : '${formattedNumber.toStringAsFixed(1)}$unit';
   }
 }

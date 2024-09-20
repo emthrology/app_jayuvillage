@@ -27,6 +27,8 @@ import 'package:logger/logger.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../service/dependency_injecter.dart';
+import '../store/store_service.dart';
 import 'contents/contents_index_screen.dart';
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
@@ -39,6 +41,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _storeService = getIt<StoreService>();
   bool isTarget = false;
   late TabController tabController;
   late final WebViewController _controller;
@@ -53,16 +56,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final UrlLaunchService urlService = UrlLaunchService();
   final SecureStorage secureStorage = SecureStorage();
   String storedValue = '';
-  bool session = false;
+  bool sessionValid = false;
   final List<String> _tabUrls = [
     // "https://jayuvillage.com",
     "https://jayuvillage.com",
     "https://jayuvillage.com/contents",
     "https://jayuvillage.com/organization",
     "https://jayuvillage.com/posts",
-    "https://jayuvillage.com/chat",
+    // "https://jayuvillage.com/chat",\
     // TODO 내 정보 url 웹뷰 사이드메뉴에 만들기 (플러터 로그인했을때만 보이도록)
-    // "https://jayuvillage.com/mypage",
+    "https://jayuvillage.com/mypage",
   ];
   final List<String> _quickBtnPages = [
     "/contents",
@@ -181,8 +184,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 100), () {
       if (isValidJson(storedValue)) {
         Map<String, dynamic> json = jsonDecode(storedValue);
+        _storeService.setPrefs('XSRF_TOKEN', json['success']?['token']);
         setState(() {
-          session = json.containsKey('success') ? true : false;
+          sessionValid = json.containsKey('success') ? true : false;
           isTarget = json['success']?['id'] == 11;
           _setComponents(_currentUrl.toString());
           storedValue = '';
@@ -191,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
   void _setComponents(String url) {
-    if (session) {
+    if (sessionValid) {
       setQuickBtns('AFTERLOGIN');
     } else {
       setQuickBtns('BEFORELOGIN');
@@ -392,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               deleteData('password');
               setState(() {
                 storedValue = '';
-                session = false;
+                sessionValid = false;
               });
               setQuickBtns('BEFORELOGIN');
             }
@@ -580,7 +584,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void setInitialBtnState() {
-    session ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
+    sessionValid ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
   }
   bool isValidJson(String jsonString) {
     try {
@@ -609,7 +613,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> deleteData(String key) async {
     await secureStorage.deleteSecureData(key);
     if (key == 'session') {
-      session = false;
+      sessionValid = false;
     }
   }
 

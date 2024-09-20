@@ -21,10 +21,17 @@ class MusicItem extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Image.network(
-                item['imageUrl'],
-                fit: BoxFit.cover,
-                width: 84.0,
+              Padding(
+                padding: const EdgeInsets.only(left:4.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.network(
+                    item['imageUrl'],
+                    fit: BoxFit.contain,
+                    width: 84.0,
+
+                  ),
+                ),
               ),
               Expanded(
                 child: Padding(
@@ -34,6 +41,8 @@ class MusicItem extends StatelessWidget {
                     children: [
                       Text(
                         item['title'],
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                         style: TextStyle(
                           fontSize: titleSize,
                           color: Colors.black,
@@ -50,6 +59,8 @@ class MusicItem extends StatelessWidget {
                       ),
                       Text(
                         item['subtitle'],
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                         style: TextStyle(
                           fontSize: fontSize,
                         ),

@@ -3,14 +3,13 @@ import '../../const/contents/content_type.dart';
 import '../shaped_icon_button.dart';
 
 class ListItem extends StatelessWidget {
-  const ListItem({
-    super.key,
-    required this.isEditMode,
-    required this.item,
-    this.onMoveUp,
-    this.onMoveDown,
-    this.onDelete
-  });
+  const ListItem(
+      {super.key,
+      required this.isEditMode,
+      required this.item,
+      this.onMoveUp,
+      this.onMoveDown,
+      this.onDelete});
 
   final Map<String, dynamic> item;
   final bool isEditMode;
@@ -33,17 +32,24 @@ class ListItem extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
-              item['imageUrl'] == null
-                  ? Image.asset(
-                      'asset/images/default_thumbnail.png',
-                      fit: BoxFit.cover,
-                      width: 96.0,
-                    )
-                  : Image.network(
-                      item['imageUrl'],
-                      fit: BoxFit.cover,
-                      width: 84.0,
-                    ),
+              if (item['imageUrl'] == null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.asset(
+                    'asset/images/default_thumbnail.png',
+                    fit: BoxFit.cover,
+                    width: 96.0,
+                  ),
+                )
+              else
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.network(
+                    item['imageUrl'],
+                    fit: BoxFit.cover,
+                    width: 84.0,
+                  ),
+                ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -53,6 +59,7 @@ class ListItem extends StatelessWidget {
                       Text(
                         item['title'],
                         style: TextStyle(
+                            fontFamily: 'NotoSans',
                             fontSize: _titleSize,
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
@@ -61,6 +68,7 @@ class ListItem extends StatelessWidget {
                       Text(
                         _getContentTypeLabel(item),
                         style: TextStyle(
+                          fontFamily: 'NotoSans',
                           fontSize: _fontSize,
                         ),
                         softWrap: true,
@@ -139,6 +147,4 @@ class ListItem extends StatelessWidget {
         return '';
     }
   }
-
-
 }

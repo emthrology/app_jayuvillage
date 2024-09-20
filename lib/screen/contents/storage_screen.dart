@@ -109,8 +109,9 @@ class _StorageScreenState extends State<StorageScreen> {
               child: Text(
                 '보관함',
                 style: TextStyle(
+                  fontFamily: 'NotoSans',
                   fontSize: 36,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

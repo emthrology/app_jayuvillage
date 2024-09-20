@@ -163,8 +163,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Text(
                   '검색',
                   style: TextStyle(
+                    fontFamily: 'NonoSans',
                     fontSize: 36,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

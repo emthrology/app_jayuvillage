@@ -130,6 +130,10 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   UriAudioSource _createAudioSource(MediaItem mediaItem) {
+    // print('_createAudioSource_mediaItem:$mediaItem'); // 디버그 로그 추가
+    // final url = mediaItem.extras!['url'] as String;
+    // print('Audio URL: $url'); // URL 출력
+
     return AudioSource.uri(
       Uri.parse(mediaItem.extras!['url'] as String),
       tag: mediaItem,

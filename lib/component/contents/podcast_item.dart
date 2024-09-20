@@ -12,33 +12,46 @@ class PodcastItem extends StatelessWidget {
   final double fontSize = 18.0;
   @override
   Widget build(BuildContext context) {
-    bool isLive = item['isLive'] ?? false; // Ensure isLive is not null
+    // bool isLive = item['isLive'] ?? false; // Ensure isLive is not null
+    bool isLive = true;
     return GestureDetector(
       onTap: () => _pageManager.addAndPlayItem(item),
       child: Padding(
         padding: const EdgeInsets.only(top:4.0),
         child: Card(
           color: Colors.white,
-          shadowColor: Colors.transparent,
+          // shadowColor: Colors.transparent,
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
               Stack(
                 alignment: Alignment.topCenter,
                 children: [
-                  Image.network(
-                    item['imageUrl'],
-                    fit: BoxFit.cover,
-                    width: 84.0,
+                  Padding(
+                    padding: const EdgeInsets.only(left:4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(
+                        item['imageUrl'],
+                        fit: BoxFit.cover,
+                        width: 84.0,
+                      ),
+                    ),
                   ),
                   if(isLive)
                     Container(
                       padding: const EdgeInsets.only(top:8.0),
                       alignment: Alignment.topCenter,
-                      child: Image.asset(
-                        'asset/images/onair.png',
-                        fit: BoxFit.cover,
-                        width: 72.0
+                      child: Padding(
+                        padding: const EdgeInsets.only(left:4.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: Image.asset(
+                            'asset/images/onair.png',
+                            fit: BoxFit.cover,
+                            width: 72.0
+                          ),
+                        ),
                       ),
                     )
                 ],
@@ -66,13 +79,14 @@ class PodcastItem extends StatelessWidget {
                             ),
                           Text(
                             item['title'],
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
                                 fontSize: titleSize,
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 overflow: TextOverflow.ellipsis
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -107,6 +121,8 @@ class PodcastItem extends StatelessWidget {
                       ),
                     Text(
                       item['subtitle'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                       style: TextStyle(
                         fontSize: fontSize,
                       ),

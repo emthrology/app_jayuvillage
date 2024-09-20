@@ -54,57 +54,9 @@ class _ListPlaylistModalState extends State<ListPlaylistModal> {
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 TextButton(
                   onPressed: () async {
-                    if(_selectedIndex == null) {
-                      Fluttertoast.showToast(
-                          msg: "보관함을 먼저 선택해주세요",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.TOP,
-                          timeInSecForIosWeb: 2,
-                          backgroundColor: Color(0xffff0000),
-                          textColor: Colors.white,
-                          fontSize: 22.0
-                      );
-                    }
-                    Map<String, dynamic> body = {
-                      'audio_id': widget.audio_id,
-                      'bag_item_id': widget.playlists[_selectedIndex!]['id']
-                    };
-                    String completeWord = '보관 작업이 ';
-                    try {
-                      Response res = await _apiService.postItemWithResponse(endpoint: endpoint, body: body);
-                      // print('res:$res');
-                      if((res.statusCode == 200 || res.statusCode == 201) && res.data is! String) {
-                        _storeService.clearCache();
-                        Fluttertoast.showToast(
-                            msg: "$completeWord 완료되었습니다.",
-                            toastLength: Toast.LENGTH_LONG,
-                            gravity: ToastGravity.TOP,
-                            timeInSecForIosWeb: 2,
-                            backgroundColor: Color(0xff0baf00),
-                            textColor: Colors.white,
-                            fontSize: 16.0
-                        );
-                      }else {
-                        Fluttertoast.showToast(
-                            msg: "$completeWord 실패하였습니다.",
-                            toastLength: Toast.LENGTH_LONG,
-                            gravity: ToastGravity.TOP,
-                            timeInSecForIosWeb: 2,
-                            backgroundColor: Color(0xffff0000),
-                            textColor: Colors.white,
-                            fontSize: 16.0
-                        );
-                      }
-                    } catch(e) {
-                      Fluttertoast.showToast(
-                          msg: "$completeWord 실패하였습니다.",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.TOP,
-                          timeInSecForIosWeb: 2,
-                          backgroundColor: Color(0xffff0000),
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
+                    bool success = await _handleItemStorage();
+                    if (success) {
+                      Navigator.pop(context);
                     }
                   },
                   child: Text('선택 완료',
@@ -140,5 +92,55 @@ class _ListPlaylistModalState extends State<ListPlaylistModal> {
         ],
       ),
     );
+  }
+  Future<bool> _handleItemStorage() async {
+    if (_selectedIndex == null) {
+      Fluttertoast.showToast(
+          msg: "보관함을 먼저 선택해주세요",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Color(0xffff0000),
+          textColor: Colors.white,
+          fontSize: 22.0
+      );
+      return false;
+    }
+
+    Map<String, dynamic> body = {
+      'audio_id': widget.audio_id,
+      'bag_item_id': widget.playlists[_selectedIndex!]['id']
+    };
+    String completeWord = '보관 작업이 ';
+
+    try {
+      Response res = await _apiService.postItemWithResponse(endpoint: endpoint, body: body);
+      if ((res.statusCode == 200 || res.statusCode == 201) && res.data is! String) {
+        _storeService.clearCache();
+        Fluttertoast.showToast(
+            msg: "$completeWord 완료되었습니다.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Color(0xff0baf00),
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
+        return true;
+      } else {
+        throw Exception("API 요청 실패");
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: "$completeWord 실패하였습니다.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Color(0xffff0000),
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+      return false;
+    }
   }
 }

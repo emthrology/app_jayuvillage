@@ -28,6 +28,8 @@ class NewsItem extends StatelessWidget {
                   children: [
                     Text(
                       item['title'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: TextStyle(
                         fontSize: titleSize,
                         color: Colors.black,
@@ -45,6 +47,8 @@ class NewsItem extends StatelessWidget {
                     ),
                     Text(
                       item['subtitle'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: TextStyle(
                         fontSize: fontSize,
                       ),
