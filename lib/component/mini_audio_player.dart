@@ -20,6 +20,22 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
 
   late AudioPlayer player;
   String currentTitle = '';
+
+  void navigateToAudioScreen(BuildContext context) {
+    if (playerManager.currentMediaItemNotifier.value != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => AudioScreen()),
+      );
+    } else {
+      // 미디어 아이템이 없을 때 사용자에게 알림
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('미디어 정보를 불러올 수 업습니다.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -70,11 +86,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
           flex: 4,
           child: GestureDetector(
             onTap:() {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => AudioScreen()
-                )
-              );
+              navigateToAudioScreen(context);
             },
             child: Container(
               alignment: Alignment.centerLeft,

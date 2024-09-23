@@ -14,7 +14,8 @@ class ContentsIndexScreen extends StatefulWidget {
   State<ContentsIndexScreen> createState() => _ContentsIndexScreenState();
 }
 
-class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerProviderStateMixin {
+class _ContentsIndexScreenState extends State<ContentsIndexScreen>
+    with TickerProviderStateMixin {
   late TabController tabController;
 
   int _currentIndex = 1;
@@ -31,10 +32,12 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
   bool _isPlayerVisible = true;
   Offset _playerOffset = Offset.zero;
   final double _maxHideRatio = 0.83;
+
   void _updatePlayerVisibility(DragUpdateDetails details) {
     setState(() {
       if (_isPlayerVisible) {
-        _playerOffset += Offset(details.delta.dx / MediaQuery.of(context).size.width, 0);
+        _playerOffset +=
+            Offset(details.delta.dx / MediaQuery.of(context).size.width, 0);
         _playerOffset = Offset(
           _playerOffset.dx.clamp(-_maxHideRatio, _maxHideRatio),
           0,
@@ -43,7 +46,8 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
         // 이미 숨겨진 상태에서는 반대 방향으로만 드래그 가능
         if ((_playerOffset.dx < 0 && details.delta.dx > 0) ||
             (_playerOffset.dx > 0 && details.delta.dx < 0)) {
-          _playerOffset += Offset(details.delta.dx / MediaQuery.of(context).size.width, 0);
+          _playerOffset +=
+              Offset(details.delta.dx / MediaQuery.of(context).size.width, 0);
           _playerOffset = Offset(
             _playerOffset.dx.clamp(-1.0, 1.0),
             0,
@@ -78,11 +82,13 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
       });
     }
   }
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -109,11 +115,11 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Stack(
-          children: [
-            _pages[_currentIndex],
-            Positioned(
-              bottom:0,
+          child: Stack(
+        children: [
+          _pages[_currentIndex],
+          Positioned(
+              bottom: 0,
               left: 0,
               right: 0,
               child: GestureDetector(
@@ -131,47 +137,47 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
                       },
                       child: Container(
                         height: 60,
-                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         padding: EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: Offset(0, 2)
-                            )
-                          ]
-                        ),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2))
+                            ]),
                         child: MiniAudioPlayer(),
                       ),
                     );
                   },
                 ),
-              )
+              )),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Semantics(
+                  label: '뒤로가기',
+                  hint: '이전 화면으로 가기 위해 누르세요',
+                  child: GestureDetector(
+                    onTap: _onBackTapped,
+                    child: Row(children: [
+                      Icon(
+                        Icons.arrow_back_ios_new,
+                        size: 32.0,
+                      ),
+                    ]),
+                  ),
+                )
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Semantics(
-                    label: '뒤로가기',
-                    hint: '이전 화면으로 가기 위해 누르세요',
-                    child: GestureDetector(
-                      onTap: _onBackTapped,
-                      child: Row(
-                        children:[
-                          Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 32.0,
-                          ),
-                        ]),),)],),
-            ),
-          ],
-        )
-      ),
+          ),
+        ],
+      )),
       bottomNavigationBar: Stack(
         children: [
           BottomNavigationBar(
@@ -184,16 +190,17 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
             type: BottomNavigationBarType.fixed,
             onTap: _onNavTapped,
             items: CONTENTSTABS
-              .map(
-                (e) =>
-                BottomNavigationBarItem(
-                  icon: Icon(e.icon), label: e.label),
-            ).toList(),
+                .map(
+                  (e) => BottomNavigationBarItem(
+                      icon: Icon(e.icon), label: e.label),
+                )
+                .toList(),
           ),
         ],
       ),
     );
   }
+
   void _onBackTapped() {
     if (_navigationStack.length > 1) {
       _navigationStack.removeLast();
@@ -204,10 +211,11 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen> with TickerPr
       Navigator.of(context).pop();
     }
   }
+
   void _onNavTapped(int index) {
-    if(index == 0) {
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => _pages[index]));
+    if (index == 0) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => _pages[index]));
     }
     if (index != _currentIndex) {
       setState(() {

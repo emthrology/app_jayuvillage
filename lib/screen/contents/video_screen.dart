@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
+import '../../component/comments_section.dart';
 import '../../component/contents/detail_section.dart';
 import '../../component/contents/social_buttons.dart';
 import '../../service/dependency_injecter.dart';
@@ -31,6 +32,7 @@ class _VideoScreenState extends State<VideoScreen> {
   }
   Future<void> _init() async {
     final videoId = YoutubePlayer.convertUrlToId(widget.item['audioUrl']);
+    // print('videoId:$videoId');
     _controller = YoutubePlayerController(
       initialVideoId: videoId!,
       flags: const YoutubePlayerFlags(
@@ -103,7 +105,8 @@ class _VideoScreenState extends State<VideoScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4.0),
                           child: DetailSection(mediaItem: makeMediaItem(widget.item))),
-                      SizedBox(height: 40,)
+                      SizedBox(height: 10,),
+                      CommentsSection()
                     ],
                   );
                 },

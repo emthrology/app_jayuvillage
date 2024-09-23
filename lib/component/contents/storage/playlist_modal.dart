@@ -217,14 +217,11 @@ class _PlaylistModalState extends State<PlaylistModal>
       );
     }
     _playerManager.updatePlaylist(selectedPlaylist);
-    // TODO: Implement play logic for selectedPlaylist
-    print('Selected items: ${selectedPlaylist.length}');
     Navigator.pop(context);
   }
 
   void _playAll() {
     _playerManager.updatePlaylist(playlistItems);
-    print('play all items: ${playlistItems.length}');
     Navigator.pop(context);
   }
   @override

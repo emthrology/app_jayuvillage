@@ -123,7 +123,6 @@ class MyAudioHandler extends BaseAudioHandler {
     // manage Just Audio
     final audioSource = _createAudioSource(mediaItem);
     _playlist.add(audioSource);
-
     // notify system
     final newQueue = queue.value..add(mediaItem);
     queue.add(newQueue);
@@ -133,11 +132,14 @@ class MyAudioHandler extends BaseAudioHandler {
     // print('_createAudioSource_mediaItem:$mediaItem'); // 디버그 로그 추가
     // final url = mediaItem.extras!['url'] as String;
     // print('Audio URL: $url'); // URL 출력
+    final uri = Uri.parse(mediaItem.extras!['url'] as String);
+    final isLive = mediaItem.extras!['isLive'] as bool? ?? false;
+    if (isLive) {
+      return HlsAudioSource(uri, tag: mediaItem);
+    } else {
+      return AudioSource.uri(uri, tag: mediaItem);
+    }
 
-    return AudioSource.uri(
-      Uri.parse(mediaItem.extras!['url'] as String),
-      tag: mediaItem,
-    );
   }
 
   @override

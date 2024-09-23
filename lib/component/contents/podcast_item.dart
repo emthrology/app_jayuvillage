@@ -12,8 +12,7 @@ class PodcastItem extends StatelessWidget {
   final double fontSize = 18.0;
   @override
   Widget build(BuildContext context) {
-    // bool isLive = item['isLive'] ?? false; // Ensure isLive is not null
-    bool isLive = true;
+    bool isLive = item['isLive'] ?? false; // Ensure isLive is not null
     return GestureDetector(
       onTap: () => _pageManager.addAndPlayItem(item),
       child: Padding(
@@ -49,7 +48,7 @@ class PodcastItem extends StatelessWidget {
                           child: Image.asset(
                             'asset/images/onair.png',
                             fit: BoxFit.cover,
-                            width: 72.0
+                            width: 60.0
                           ),
                         ),
                       ),

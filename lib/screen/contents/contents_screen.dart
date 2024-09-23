@@ -124,6 +124,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                   _buildSection('팟케스트', ContentType.podcast),
                                   _buildSection('추천음악', ContentType.music),
                                   // _buildSection('정치·시사·뉴스', ContentType.news)
+                                  SizedBox(height: 20,)
                                 ],
                               )),
                   ]))),

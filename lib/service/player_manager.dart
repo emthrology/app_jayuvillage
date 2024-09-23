@@ -21,9 +21,10 @@ class PlayerManager {
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
   final playlistLengthNotifier = ValueNotifier<int>(0);
   final currentMediaItemNotifier = ValueNotifier<MediaItem?>(null);
+  final ValueNotifier<bool> isLiveStreamNotifier = ValueNotifier<bool>(false);
   final _audioHandler = getIt<AudioHandler>();
   final _extractor = YoutubeAudioUrlExtractor();
-  MediaItem? _currentMediaItem;
+  // MediaItem? _currentMediaItem; //deprecated
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
@@ -51,30 +52,10 @@ class PlayerManager {
     final mediaItems = await Future.wait(
         playlist.map((song) => _createMediaItem(song))
     );
-    // final mediaItems = playlist
-    //     .map((song) => MediaItem(
-    //   id: song['id'] ?? 0,
-    //   album: song['album'] ?? '',
-    //   title: song['title'] ?? '',
-    //   artUri: Uri.parse(song['artUri'] ?? ''),
-    //   extras: {
-    //     'url': _getAudioUrl(song['audioUrl'] as String),
-    //     'subtitle': song['subtitle'] ?? '',
-    //     'listerCount': song['listerCount'] ?? '',
-    //     'viewCount': song['viewCount'] ?? 0,
-    //     'shareCount': song['shareCount'] ?? 0,
-    //     'likeCount': song['likeCount'] ?? 0,
-    //     'isLike': song['isLike'] ?? false,
-    //     'isLive': song['isLive'] ?? false,
-    //     'startTime': song['startTime'] ?? '',
-    //     'endTime': song['endTime'] ?? '',
-    //     'createdAt': song['createdAt'] ?? '',
-    //     'diffAt': song['diffAt'] ?? '',
-    //   },
-    // )).toList();
     _audioHandler.addQueueItems(mediaItems);
   }
 
+  //TODO 보관함 불러올 때 사용
   Future<void> updatePlaylist(List musicItems) async {
     // 기존 큐 비우기
     final currentQueue = _audioHandler.queue.value;
@@ -95,89 +76,50 @@ class PlayerManager {
       _audioHandler.play();
     }
   }
+  Future<void> waitForMediaItem() async {
+    if (_audioHandler.mediaItem.value != null) return;
 
+    await for (final mediaItem in _audioHandler.mediaItem) {
+      if (mediaItem != null) break;
+    }
+  }
+
+  void _updateLiveStreamStatus() {
+    final currentItem = _audioHandler.mediaItem.value;
+    if (currentItem != null) {
+      isLiveStreamNotifier.value = currentItem.extras?['isLive'] == true;
+    }
+  }
   Future<void> addAndPlayItem(Map item) async {
+    // 라이브 스트림 상태 업데이트
+    isLiveStreamNotifier.value = item['isLive'] == true;
     final mediaItem = await _createMediaItem(item);
     await _audioHandler.addQueueItem(mediaItem);
     final queue = _audioHandler.queue.value;
     final index = queue.indexOf(mediaItem);
     if (index != -1) {
-      await _audioHandler.skipToQueueItem(index);
-      await _audioHandler.play();
+      Future.delayed(Duration(milliseconds: 500), () {
+        waitForMediaItem();
+        _updateLiveStreamState(mediaItem);
+        _audioHandler.skipToQueueItem(index);
+        _audioHandler.play();
+      });
+      // mediaItem이 생성되지 않았을 경우를 대비한 추가 로직
+      if (_audioHandler.mediaItem.value == null) {
+        await Future.delayed(Duration(seconds: 2)); // HLS 초기화를 위한 대기
+        if (_audioHandler.mediaItem.value == null) {
+          // 여전히 mediaItem이 없다면 수동으로 생성
+          // _currentMediaItem = mediaItem;
+          currentMediaItemNotifier.value = mediaItem;
+        }
+      }
     }
   }
-  //TODO 보관함 불러올 때 사용
-
-  // Future<void> updatePlaylist(List<dynamic> musicItems) async {
-  //
-  //   final currentQueue = _audioHandler.queue.value;
-  //   for (var i = currentQueue.length - 1; i >= 0; i--) {
-  //     await _audioHandler.removeQueueItemAt(i);
-  //   }
-  //
-  //
-  //   final mediaItems = musicItems.map((song) => MediaItem(
-  //     id: song['id'].toString(),
-  //     album: song['album'] ?? '',
-  //     title: song['title'] ?? '',
-  //     artUri: Uri.parse(song['imageUrl'] ?? ''),
-  //     extras: {
-  //       'url': _getAudioUrl(song['audioUrl'] as String),
-  //       'subtitle': song['subtitle'] ?? '',
-  //       'listerCount': song['listerCount'] ?? '',
-  //       'viewCount': song['viewCount'] ?? 0,
-  //       'shareCount': song['shareCount'] ?? 0,
-  //       'likeCount': song['likeCount'] ?? 0,
-  //       'isLike': song['isLike'] ?? false,
-  //       'isLive': song['isLive'] ?? false,
-  //       'startTime': song['startTime'] ?? '',
-  //       'endTime': song['endTime'] ?? '',
-  //       'createdAt': song['createdAt'] ?? '',
-  //       'diffAt': song['diffAt'] ?? '',
-  //     },
-  //   )).toList();
-  //
-  //   await _audioHandler.addQueueItems(mediaItems);
-  //
-  //
-  //   _updateSkipButtons();
-  //   if (mediaItems.isNotEmpty) {
-  //     currentSongTitleNotifier.value = mediaItems.first.title;
-  //   }
-  // }
-
-  // Future<void> addAndPlayItem(Map<String, dynamic> item) async {
-  //   final mediaItem = MediaItem(
-  //     id: item['id'].toString(),
-  //     album: item['album'] ?? '',
-  //     title: item['title'] ?? '',
-  //     artUri: Uri.parse(item['imageUrl'] ?? ''),
-  //     extras: {
-  //       'url': await _getAudioUrl(item['audioUrl']),
-  //       'subtitle': item['subtitle'] ?? '',
-  //       'listerCount': item['listerCount'] ?? '',
-  //       'viewCount': item['viewCount'] ?? 0,
-  //       'shareCount': item['shareCount'] ?? 0,
-  //       'likeCount': item['likeCount'] ?? 0,
-  //       'isLike': item['isLike'] ?? false,
-  //       'isLive': item['isLive'] ?? false,
-  //       'startTime': item['startTime'] ?? '',
-  //       'endTime': item['endTime'] ?? '',
-  //       'createdAt': item['createdAt'] ?? '',
-  //       'diffAt': item['diffAt'] ?? '',
-  //     },
-  //   );
-  //
-  //   await _audioHandler.addQueueItem(mediaItem);
-  //   await Future.delayed(Duration(milliseconds: 500)); // 잠시 대기
-  //   final queue = _audioHandler.queue.value;
-  //   final index = queue.indexOf(mediaItem);
-  //   if (index != -1) {
-  //     await _audioHandler.skipToQueueItem(index);
-  //     await _audioHandler.play();
-  //   }
-  // }
-
+  void _updateLiveStreamState(MediaItem mediaItem) {
+    currentSongTitleNotifier.value = mediaItem.title;
+    currentSongArtUriNotifier.value = mediaItem.artUri?.toString() ?? '';
+    // 필요한 경우 다른 상태 업데이트
+  }
   void _listenToChangesInPlaylist() {
     _audioHandler.queue.listen((playlist) {
       if (playlist.isEmpty) {
@@ -245,23 +187,46 @@ class PlayerManager {
       );
     });
   }
-
   void _listenToChangesInSong() {
     _audioHandler.mediaItem.listen((mediaItem) {
-      _currentMediaItem = mediaItem; // 현재 재생 중인 MediaItem 저장
-      updateCurrentMediaItem(mediaItem);
-      currentSongTitleNotifier.value = mediaItem?.title ?? '재생중이 아님';
-      currentSongArtUriNotifier.value = mediaItem?.artUri?.toString() ?? '';
+      if (mediaItem != null) {
+        currentMediaItemNotifier.value = mediaItem;
+        updateCurrentMediaItem(mediaItem);
+
+        final isLive = mediaItem.extras?['isLive'] ?? false;
+        if (isLive) {
+          currentSongTitleNotifier.value = '${mediaItem.title} (라이브)';
+          currentSongArtUriNotifier.value = mediaItem.artUri?.toString() ?? '';
+        } else {
+          currentSongTitleNotifier.value = mediaItem.title;
+          currentSongArtUriNotifier.value = mediaItem.artUri?.toString() ?? '';
+        }
+      } else {
+        currentSongTitleNotifier.value = '재생중이 아님';
+        currentSongArtUriNotifier.value = '';
+      }
+
       _updateSkipButtons();
     });
+
+    // 추가: 재생 상태 변경 감지
+    _audioHandler.playbackState.listen((playbackState) {
+      if (playbackState.playing) {
+        final currentItem = _audioHandler.mediaItem.value;
+        if (currentItem != null && currentItem.extras?['isLive'] == true) {
+          _updateLiveStreamState(currentItem);
+        }
+      }
+    });
   }
-  MediaItem? getCurrentMediaItem() {
-    // currentSongTitleNotifier의 값이 특정 문자열이 아닐 때만 MediaItem 반환
-    if (currentSongTitleNotifier.value != '' && currentSongTitleNotifier.value != '재생중이 아님') {
-      return _currentMediaItem;
-    }
-    return null;
-  }
+  // deprecated
+  // MediaItem? getCurrentMediaItem() {
+  //   // currentSongTitleNotifier의 값이 특정 문자열이 아닐 때만 MediaItem 반환
+  //   if (currentSongTitleNotifier.value != '' && currentSongTitleNotifier.value != '재생중이 아님') {
+  //     return _currentMediaItem;
+  //   }
+  //   return null;
+  // }
 
   void _updateSkipButtons() {
     final mediaItem = _audioHandler.mediaItem.value;
@@ -297,15 +262,18 @@ class PlayerManager {
 
   void seek(Duration position) => _audioHandler.seek(position);
 
-  void previous() {
+  void previous() async {
     if(playlistLengthNotifier.value > 0) {
-      _audioHandler.skipToPrevious();
+      await _audioHandler.skipToPrevious();
+      _updateLiveStreamStatus();
     }
   }
-  void next() {
+  void next() async {
     if(playlistLengthNotifier.value > 0) {
-      updateCurrentMediaItem(_currentMediaItem);
-      _audioHandler.skipToNext();
+      await _audioHandler.skipToNext();
+      _updateLiveStreamStatus();
+      updateCurrentMediaItem(currentMediaItemNotifier.value);
+
     }
 
   }
@@ -366,8 +334,8 @@ class PlayerManager {
     return MediaItem(
       id: song['id'].toString(),
       album: song['album'] ?? '',
-      title: song['title'] ?? '',
-      artUri: Uri.parse(song['imageUrl'] ?? ''),
+      title: song['isLive'] ? '${song['title']} (라이브)' : (song['title'] ?? ''),
+          artUri: Uri.parse(song['imageUrl'] ?? ''),
       extras: {
         'url': await _getAudioUrl(song['audioUrl']),
         'subtitle': song['subtitle'] ?? '',
@@ -386,7 +354,7 @@ class PlayerManager {
   }
 
   Future<String> _getAudioUrl(String url) async {
-    print('before:$url');
+    // print('before:$url');
     if (url.contains('youtube')) {
       url = await _extractor.getAudioUrl(url);
     }

@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:webview_ex/component/rounded_inkwell_button.dart';
 
 import '../../component/contents/storage/new_playlist_modal.dart';
 import '../../component/contents/storage/playlist_modal.dart';
 import '../../service/api_service.dart';
-
+import '../../service/dependency_injecter.dart';
+import '../../service/player_manager.dart';
+import '../../store/secure_storage.dart';
+import '../../../const/contents/content_type.dart';
 
 class StorageScreen extends StatefulWidget {
   const StorageScreen({super.key});
@@ -14,7 +19,8 @@ class StorageScreen extends StatefulWidget {
 
 class _StorageScreenState extends State<StorageScreen> {
   final ApiService _apiService = ApiService();
-
+  final secureStorage = getIt<SecureStorage>();
+  final _playerManager = getIt<PlayerManager>();
   bool _isLoading = true;
   List<dynamic> bags = [];
   final double titleSize = 24.0;
@@ -86,6 +92,67 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
+  Future<dynamic> getValue(key) async {
+    String value = await secureStorage.readSecureData(key);
+    return value;
+  }
+  Future<void> _loadPlayList(String bagId) async {
+    setState(() {
+      _isLoading = true;
+    });
+    String sessionData = await getValue('session');
+    Map<String, dynamic> json = jsonDecode(sessionData);
+    int user_id = json['success']?['id'];
+    try {
+      final playlistData = await _apiService.fetchItems(
+          endpoint: 'bags',
+          queries: {'bag_item_id':'$bagId','user_id':'$user_id'}
+      );
+      print('playlistData:$playlistData');
+      List<dynamic> playlistItems = _mapItems(playlistData);
+      print('playlistItems:$playlistItems');
+      await _playerManager.updatePlaylist(playlistItems);
+    } catch(e) {
+      print('Error loading bags: $e');
+    }finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  T? getEnumFromString<T extends Enum>(String str, List<T> values) {
+    try {
+      return values.firstWhere((e) => e.name.toLowerCase() == str.toLowerCase());
+    } on StateError {
+      return null; // 일치하는 enum 값이 없을 경우
+    }
+  }
+  List<Map<String, dynamic>> _mapItems(List<dynamic> apiData) {
+    return apiData.map((item) => {
+      'type': getEnumFromString(item['category'], ContentType.values),
+      'id': item['id'] ?? 0,
+      'opening': item['openinig'] ?? 0,
+      'imageUrl': item['audio_thumbnail'] ?? 'asset/images/upset.png',
+      'title': item['title'] ?? '',
+      'subtitle': item['content'] ?? '',
+      'listerCount': item['view_count'] ?? '',
+      'viewCount': item['view_count'] ?? 0,
+      'shareCount': item['share_count'] ?? 0,
+      'likeCount': item['like_count'] ?? 0,
+      'isLike': item['is_like'] == 1,
+      'audioUrl': item['audio_url'] ?? '',
+      'file': item['file'] ?? '',
+
+      'isLive': item['live_status'] == 1 ? true : false,
+      'startTime' : item['startTime'] ?? '14:00',
+      'endTime' : item['endTime'] ?? '',
+
+      'album': item['title'] ?? '',
+
+      'createdAt': item['created_at'] ?? '',
+      'diffAt': item['diff_at'] ?? '',
+    }).toList();
+  }
   @override
   void initState() {
     super.initState();
@@ -168,7 +235,8 @@ class _StorageScreenState extends State<StorageScreen> {
           leading: IconButton(
             icon: Icon(Icons.play_arrow, size: 32.0),
             onPressed: () {
-              print('재생: $title');
+              print('재생: ${bags[index]['id']}');
+              _loadPlayList('${bags[index]['id']}');
             },
           ),
           title: InkWell(

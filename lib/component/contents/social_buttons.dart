@@ -79,7 +79,7 @@ class _SocialButtonsState extends State<SocialButtons> {
   }
 
   void addToPlaylist(BuildContext context, List<dynamic> bags) {
-    final mediaItem = playerManager.getCurrentMediaItem();
+    final mediaItem = playerManager.currentMediaItemNotifier.value;
     // print('mediaItem:$mediaItem');
     if (mediaItem == null) {
       Fluttertoast.showToast(

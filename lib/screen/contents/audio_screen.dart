@@ -3,6 +3,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:webview_ex/component/comments_section.dart';
 
 import '../../component/contents/detail_section.dart';
 import '../../component/contents/social_buttons.dart';
@@ -30,7 +31,7 @@ class _AudioScreenState extends State<AudioScreen> {
   // bool _isLoading = true;
   List<dynamic> bags = [];
   String currentTitle = '';
-  final mediaItem = playerManager.getCurrentMediaItem();
+  final mediaItem = playerManager.currentMediaItemNotifier.value;
 
   Future<void> _loadBags() async {
     try {
@@ -65,8 +66,8 @@ class _AudioScreenState extends State<AudioScreen> {
         resizeToAvoidBottomInset: true,
         body: SafeArea(
             child: SingleChildScrollView(
-              child: Stack(
-                        children: [
+          child: Stack(
+            children: [
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 36.0),
                   child: Column(
@@ -99,8 +100,9 @@ class _AudioScreenState extends State<AudioScreen> {
                                             (context, error, stackTrace) {
                                           return Image.asset(
                                             'asset/images/default_thumbnail.png',
-                                            width:
-                                                MediaQuery.of(context).size.width,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
                                           );
                                         },
                                       ),
@@ -126,7 +128,10 @@ class _AudioScreenState extends State<AudioScreen> {
                               : SizedBox.shrink();
                         },
                       ),
-                      SizedBox(height: 10,)
+                      SizedBox(
+                        height: 10,
+                      ),
+                      CommentsSection()
                       // Playlist(),
                     ],
                   )),
@@ -151,9 +156,9 @@ class _AudioScreenState extends State<AudioScreen> {
                   ],
                 ),
               ),
-                        ],
-                      ),
-            )));
+            ],
+          ),
+        )));
   }
 
   void _onTapped() {
@@ -193,31 +198,6 @@ class CurrentSongTitle extends StatelessWidget {
   }
 }
 
-// class Playlist extends StatelessWidget {
-//   const Playlist({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Expanded(
-//       child: ValueListenableBuilder<List<String>>(
-//         valueListenable: playerManager.playlistNotifier,
-//         builder: (context, playlistTitles, _) {
-//           return ListView.builder(
-//             itemCount: playlistTitles.length,
-//             itemBuilder: (context, index) {
-//               return ListTile(
-//                 title: Text(playlistTitles[index]),
-//                 onTap: () => playerManager.skipToQueueItem(index),
-//                 selected: index == playerManager.currentSongTitleNotifier.value,
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-
 class AddRemoveSongButtons extends StatelessWidget {
   const AddRemoveSongButtons({super.key});
 
@@ -247,14 +227,30 @@ class AudioProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ProgressBarState>(
-      valueListenable: playerManager.progressNotifier,
-      builder: (_, value, __) {
-        return ProgressBar(
-          progress: value.current,
-          buffered: value.buffered,
-          total: value.total,
-          onSeek: playerManager.seek,
+    return ValueListenableBuilder<bool>(
+      valueListenable: playerManager.isLiveStreamNotifier,
+      builder: (_, isLiveStream, __) {
+        if (isLiveStream) {
+          return Center(
+            child: Text(
+              '라이브 방송 중',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        }
+        return ValueListenableBuilder<ProgressBarState>(
+          valueListenable: playerManager.progressNotifier,
+          builder: (_, value, __) {
+            return ProgressBar(
+              progress: value.current,
+              buffered: value.buffered,
+              total: value.total,
+              onSeek: playerManager.seek,
+            );
+          },
         );
       },
     );
@@ -281,8 +277,6 @@ class AudioControlButtons extends StatelessWidget {
     );
   }
 }
-
-
 
 class RepeatButton extends StatelessWidget {
   const RepeatButton({super.key});
@@ -399,5 +393,3 @@ class ShuffleButton extends StatelessWidget {
     );
   }
 }
-
-
