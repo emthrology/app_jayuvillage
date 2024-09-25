@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/screen/home_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../service/dependency_injecter.dart';
 import '../store/secure_storage.dart';
 
 final homeUrl = Uri.parse('https://jayuvillage.com');
@@ -26,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   late WebViewController webController;
-  final SecureStorage secureStorage = SecureStorage();
+  final secureStorage = getIt<SecureStorage>();
   bool autoLoginEnabled = false;
   String storedValue = '';
   String authToken = '';

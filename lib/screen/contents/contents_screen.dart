@@ -85,7 +85,8 @@ class _ContentsScreenState extends State<ContentsScreen> {
               'isLive': item['live_status'] == 1 ? true : false,
               'startTime': item['startTime'] ?? '14:00',
               'endTime': item['endTime'] ?? '',
-              'album': item['title'] ?? '',
+              'album': item['album'] ?? '',
+              'author': item['author'] ?? '',
               'createdAt': item['created_at'] ?? '',
               'diffAt': item['diff_at'] ?? '',
             })

@@ -1,4 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import '../notifiers/play_button_notifier.dart';
 import '../notifiers/progress_notifier.dart';
@@ -28,12 +32,11 @@ class PlayerManager {
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
-    _listenToChangesInPlaylist();
+    _listenToChangesInSong();
     _listenToPlaybackState();
     _listenToCurrentPosition();
     _listenToBufferedPosition();
     _listenToTotalDuration();
-    _listenToChangesInSong();
     // LoopMode를 all로 초기화
     _audioHandler.setRepeatMode(AudioServiceRepeatMode.all);
     repeatButtonNotifier.value = RepeatState.repeatPlaylist;
@@ -97,6 +100,18 @@ class PlayerManager {
     await _audioHandler.addQueueItem(mediaItem);
     final queue = _audioHandler.queue.value;
     final index = queue.indexOf(mediaItem);
+    if(mediaItem.extras?['url'].contains('webm')) {
+      Fluttertoast.showToast(
+        msg: "실행할 수 없는 미디어입니다.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 4,
+        backgroundColor: Color(0xff0baf00),
+        textColor: Colors.white,
+        fontSize: 20.0,
+      );
+      return;
+    }
     if (index != -1) {
       Future.delayed(Duration(milliseconds: 500), () {
         waitForMediaItem();
@@ -337,6 +352,7 @@ class PlayerManager {
       title: song['isLive'] ? '${song['title']} (라이브)' : (song['title'] ?? ''),
           artUri: Uri.parse(song['imageUrl'] ?? ''),
       extras: {
+        'author': song['author'] ?? '',
         'url': await _getAudioUrl(song['audioUrl']),
         'subtitle': song['subtitle'] ?? '',
         'listerCount': song['listerCount'] ?? '',
@@ -354,7 +370,7 @@ class PlayerManager {
   }
 
   Future<String> _getAudioUrl(String url) async {
-    // print('before:$url');
+    print('before:$url');
     if (url.contains('youtube')) {
       url = await _extractor.getAudioUrl(url);
     }

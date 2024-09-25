@@ -27,6 +27,7 @@ import 'package:logger/logger.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../service/api_service.dart';
 import '../service/dependency_injecter.dart';
 import '../store/store_service.dart';
 import 'contents/contents_index_screen.dart';
@@ -42,6 +43,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _storeService = getIt<StoreService>();
+  final ApiService _apiService = ApiService();
   bool isTarget = false;
   late TabController tabController;
   late final WebViewController _controller;
@@ -54,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _hideBtnsFromWeb = false;
   final ImagePickerService _imagePickerService = ImagePickerService();
   final UrlLaunchService urlService = UrlLaunchService();
-  final SecureStorage secureStorage = SecureStorage();
+  final secureStorage = getIt<SecureStorage>();
   String storedValue = '';
   bool sessionValid = false;
   final List<String> _tabUrls = [
@@ -178,8 +180,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
   Future<void> _loadData() async {
-    await getValue('phone');
-    await getValue('password');
+    // await getValue('phone');
+    // await getValue('password');
     await getValue('session');
     Future.delayed(const Duration(milliseconds: 100), () {
       if (isValidJson(storedValue)) {
@@ -222,7 +224,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     }
   }
+  Future<void> writeValue(String key,String value) async {
+    await secureStorage.writeSecureData(key, value);
+  }
 
+  void _getFCMToken(userId) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+    _apiService.storeToken(token,userId);
+    // print("FCM Token: $token");
+  }
   @override
   void initState() {
     super.initState();
@@ -354,8 +365,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           });
         },
         onPageFinished: (url) {
-
-          // _setComponents(url);
           if (url.startsWith('https://jayuvillage.com/auth/login')) {
             // 컨트롤러를 초기화
             Navigator.of(context).push(MaterialPageRoute(
@@ -363,6 +372,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
         },
       ))
+      ..addJavaScriptChannel('loginChannel',
+          onMessageReceived: (JavaScriptMessage ms) {
+            Map<String, dynamic> session = jsonDecode(ms.message);
+            print("session:$session");
+            if (session.containsKey('success')) {
+              setState(() {
+                // writeValue('phone',_phoneController.text);
+                // writeValue('password',_passwordController.text);
+                writeValue('session', jsonEncode(session));
+              });
+              //send fcm token to server;
+              _getFCMToken(session['success']['id']);
+
+              //TODO 로그인 데이터를 바탕으로 퀵버튼 수정하기
+              sessionValid = session.containsKey('success') ? true : false;
+              setInitialBtnState();
+              // setQuickBtns('AFTERLOGIN');
+              // Navigator.of(context).pushReplacement(
+              //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+            }else if(session.containsKey('error')) {
+              Fluttertoast.showToast(
+                  msg: "오류가 발생하였습니다.",
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.TOP,
+                  timeInSecForIosWeb: 2,
+                  backgroundColor: Color(0xff0baf00),
+                  textColor: Colors.white,
+                  fontSize: 16.0
+              );
+            }else {
+              print(ms.message);
+            }
+          })
       ..addJavaScriptChannel('thruFlutter', onMessageReceived: (JavaScriptMessage ms) {
         // String value = ms.message;
         // Fluttertoast.showToast(

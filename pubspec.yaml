@@ -63,7 +63,7 @@ dependencies:
   app_links: ^6.1.4
   shared_preferences: ^2.3.2
   youtube_player_flutter: ^9.0.3
-  youtube_explode_dart: ^2.2.1
+  youtube_explode_dart: ^2.2.2
   just_audio: ^0.9.39
   audio_service: ^0.18.15
   audio_video_progress_bar: ^2.0.3

@@ -29,14 +29,28 @@ class _DetailSectionState extends State<DetailSection> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          Text(
-            widget.mediaItem.album ?? '',
-            maxLines: 2,
-            style: TextStyle(
-              fontFamily: 'NotoSans',
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            children: [
+              Text(
+                widget.mediaItem.album ?? '',
+                maxLines: 2,
+                style: TextStyle(
+                  fontFamily: 'NotoSans',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text('·'),
+              Text(
+                widget.mediaItem.extras?['author'] ?? '',
+                maxLines: 2,
+                style: TextStyle(
+                  fontFamily: 'NotoSans',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 8),
           GestureDetector(
