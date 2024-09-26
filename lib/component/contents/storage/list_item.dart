@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../const/contents/content_type.dart';
-import '../shaped_icon_button.dart';
+import '../../../const/contents/content_type.dart';
+import '../../shaped_icon_button.dart';
 
 class ListItem extends StatelessWidget {
   const ListItem(

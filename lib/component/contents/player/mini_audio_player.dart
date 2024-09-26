@@ -3,10 +3,10 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/service/player_manager.dart';
-import '../screen/contents/audio_screen.dart';
-import '../service/dependency_injecter.dart';
-import '../notifiers/play_button_notifier.dart';
-import '../notifiers/repeat_button_notifier.dart';
+import '../../../screen/contents/audio_screen.dart';
+import '../../../service/dependency_injecter.dart';
+import '../../../notifiers/play_button_notifier.dart';
+import '../../../notifiers/repeat_button_notifier.dart';
 
 class MiniAudioPlayer extends StatefulWidget {
   const MiniAudioPlayer({super.key});
@@ -154,7 +154,7 @@ class PlayButton extends StatelessWidget {
 }
 
 class NextSongButton extends StatelessWidget {
-  const NextSongButton({Key? key}) : super(key: key);
+  const NextSongButton({super.key});
   @override
   Widget build(BuildContext context) {
     final pageManager = getIt<PlayerManager>();

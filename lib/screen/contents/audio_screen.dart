@@ -5,8 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/component/comments_section.dart';
 
-import '../../component/contents/detail_section.dart';
-import '../../component/contents/social_buttons.dart';
+import '../../component/contents/player/detail_section.dart';
+import '../../component/contents/player/social_buttons.dart';
 import '../../component/contents/storage/list_playlist_modal.dart';
 import '../../service/api_service.dart';
 import '../../service/dependency_injecter.dart';
@@ -131,8 +131,7 @@ class _AudioScreenState extends State<AudioScreen> {
                       SizedBox(
                         height: 10,
                       ),
-                      CommentsSection()
-                      // Playlist(),
+                      CommentsSection(),
                     ],
                   )),
               Padding(
@@ -197,6 +196,8 @@ class CurrentSongTitle extends StatelessWidget {
     );
   }
 }
+
+
 
 class AddRemoveSongButtons extends StatelessWidget {
   const AddRemoveSongButtons({super.key});

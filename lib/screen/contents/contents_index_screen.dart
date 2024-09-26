@@ -3,7 +3,7 @@ import 'package:webview_ex/screen/contents/contents_screen.dart';
 import 'package:webview_ex/screen/contents/search_screen.dart';
 import 'package:webview_ex/screen/contents/storage_screen.dart';
 
-import '../../component/mini_audio_player.dart';
+import '../../component/contents/player/mini_audio_player.dart';
 import '../../const/contents_tabs.dart';
 import '../home_screen.dart';
 

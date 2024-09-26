@@ -7,7 +7,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_ex/component/mini_audio_player.dart';
+import 'package:webview_ex/component/contents/player/mini_audio_player.dart';
 import 'package:webview_ex/component/quick_btns.dart';
 import 'package:webview_ex/const/quick_btns_data.dart';
 import 'package:webview_ex/screen/login_screen.dart';

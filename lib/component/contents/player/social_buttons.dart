@@ -1,10 +1,11 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:webview_ex/component/contents/player/player_playlist_modal.dart';
 import 'package:webview_ex/component/contents/storage/list_playlist_modal.dart';
 
-import '../../service/dependency_injecter.dart';
-import '../../service/player_manager.dart';
+import '../../../service/dependency_injecter.dart';
+import '../../../service/player_manager.dart';
 
 class SocialButtons extends StatefulWidget {
   final List bags;
@@ -60,6 +61,14 @@ class _SocialButtonsState extends State<SocialButtons> {
             _buildIconText(Icons.library_music_rounded, '보관함', () {
               addToPlaylist(context, widget.bags);
             }),
+          _buildIconText(Icons.list, '목록', () {
+            showModalBottomSheet(
+              backgroundColor: Colors.white,
+              context: context,
+              isScrollControlled: true,
+              builder: (context) => PlayerPlaylistModal(),
+            );
+          }),
         ],
       ),
     );

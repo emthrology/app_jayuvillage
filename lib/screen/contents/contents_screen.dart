@@ -9,6 +9,7 @@ import '../../component/contents/video_item.dart';
 import '../../const/contents/content_type.dart';
 import '../../service/player_manager.dart';
 import '../../service/api_service.dart';
+import '../../service/contents/mapping_service.dart';
 import '../../service/dependency_injecter.dart';
 
 class ContentsScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class ContentsScreen extends StatefulWidget {
 class _ContentsScreenState extends State<ContentsScreen> {
   final _playerManager = getIt<PlayerManager>();
   final ApiService _apiService = ApiService();
+  final MappingService _mappingService = MappingService();
   bool _isLoading = true;
   List<Map<String, dynamic>> videoItems = [];
   List<Map<String, dynamic>> podcastItems = [];
@@ -46,9 +48,10 @@ class _ContentsScreenState extends State<ContentsScreen> {
           .fetchItems(endpoint: 'audios', queries: {'category': 'music'});
       // final newsData = await _apiService.fetchItems(endpoint: 'audios',queries:{'category':'news'});
       setState(() {
-        videoItems = _mapItems(videoData, ContentType.video);
-        podcastItems = _mapItems(podcastData, ContentType.podcast);
-        musicItems = _mapItems(musicData, ContentType.music);
+        videoItems = _mappingService.mapItems(videoData, ContentType.video);
+        podcastItems =
+            _mappingService.mapItems(podcastData, ContentType.podcast);
+        musicItems = _mappingService.mapItems(musicData, ContentType.music);
         // newsItems = _mapItems(newsData, ContentType.news);
         _isLoading = false;
         // PlaylistRepository 업데이트
@@ -63,34 +66,6 @@ class _ContentsScreenState extends State<ContentsScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  List<Map<String, dynamic>> _mapItems(
-      List<dynamic> apiData, ContentType type) {
-    return apiData
-        .map((item) => {
-              'type': type,
-              'id': item['id'] ?? 0,
-              'opening': item['openinig'] ?? 0,
-              'imageUrl': item['audio_thumbnail'] ?? 'asset/images/upset.png',
-              'title': item['title'] ?? '',
-              'subtitle': item['content'] ?? '',
-              'listerCount': item['view_count'] ?? '',
-              'viewCount': item['view_count'] ?? 0,
-              'shareCount': item['share_count'] ?? 0,
-              'likeCount': item['like_count'] ?? 0,
-              'isLike': item['is_like'] == 1,
-              'audioUrl': item['audio_url'] ?? '',
-              'file': item['file'] ?? '',
-              'isLive': item['live_status'] == 1 ? true : false,
-              'startTime': item['startTime'] ?? '14:00',
-              'endTime': item['endTime'] ?? '',
-              'album': item['album'] ?? '',
-              'author': item['author'] ?? '',
-              'createdAt': item['created_at'] ?? '',
-              'diffAt': item['diff_at'] ?? '',
-            })
-        .toList();
   }
 
   @override
@@ -125,7 +100,9 @@ class _ContentsScreenState extends State<ContentsScreen> {
                                   _buildSection('팟케스트', ContentType.podcast),
                                   _buildSection('추천음악', ContentType.music),
                                   // _buildSection('정치·시사·뉴스', ContentType.news)
-                                  SizedBox(height: 20,)
+                                  SizedBox(
+                                    height: 20,
+                                  )
                                 ],
                               )),
                   ]))),
@@ -178,13 +155,12 @@ class _ContentsScreenState extends State<ContentsScreen> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Center(
                 child: WhiteButton(
-                  size: Size(MediaQuery.of(context).size.width - 100, 50),
-                  onTap: () {
-                    onTapMore(type);
-                  },
-                  title: '$title 더보기',
-                )
-              ),
+              size: Size(MediaQuery.of(context).size.width - 100, 50),
+              onTap: () {
+                onTapMore(type);
+              },
+              title: '$title 더보기',
+            )),
           ),
         SizedBox(height: 32), // 섹션 간 여백
       ],

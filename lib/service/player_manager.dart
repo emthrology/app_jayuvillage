@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -14,9 +15,10 @@ import 'dependency_injecter.dart';
 class PlayerManager {
   // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
+
   // 현재 곡의 artUri를 위한 새로운 ValueNotifier 추가
   final currentSongArtUriNotifier = ValueNotifier<String>('');
-  final playlistNotifier = ValueNotifier<List<String>>([]);
+  final playlistNotifier = ValueNotifier<List<MediaItem>>([]);
   final progressNotifier = ProgressNotifier();
   final repeatButtonNotifier = RepeatButtonNotifier();
   final isFirstSongNotifier = ValueNotifier<bool>(true);
@@ -25,36 +27,41 @@ class PlayerManager {
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
   final playlistLengthNotifier = ValueNotifier<int>(0);
   final currentMediaItemNotifier = ValueNotifier<MediaItem?>(null);
-  final ValueNotifier<bool> isLiveStreamNotifier = ValueNotifier<bool>(false);
+  final isLiveStreamNotifier = ValueNotifier<bool>(false);
   final _audioHandler = getIt<AudioHandler>();
   final _extractor = YoutubeAudioUrlExtractor();
+
   // MediaItem? _currentMediaItem; //deprecated
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
+    _listenToChangesInPlaylist();
     _listenToChangesInSong();
     _listenToPlaybackState();
     _listenToCurrentPosition();
     _listenToBufferedPosition();
     _listenToTotalDuration();
-    // LoopMode를 all로 초기화
+
     _audioHandler.setRepeatMode(AudioServiceRepeatMode.all);
     repeatButtonNotifier.value = RepeatState.repeatPlaylist;
   }
+
   Map<String, dynamic>? _lastMusicItem;
+
   void updateCurrentMediaItem(MediaItem? mediaItem) {
     currentMediaItemNotifier.value = mediaItem;
   }
+
   Future<void> setLastMusicItem(Map<String, dynamic> item) async {
     _lastMusicItem = item;
   }
+
   Future<void> _loadPlaylist() async {
     final songRepository = getIt<PlaylistRepository>();
     final playlist = await songRepository.fetchInitialPlaylist();
     // 새로운 아이템 추가
-    final mediaItems = await Future.wait(
-        playlist.map((song) => _createMediaItem(song))
-    );
+    final mediaItems =
+        await Future.wait(playlist.map((song) => _createMediaItem(song)));
     _audioHandler.addQueueItems(mediaItems);
   }
 
@@ -67,9 +74,8 @@ class PlayerManager {
     }
 
     // 새로운 아이템 추가
-    final mediaItems = await Future.wait(
-        musicItems.map((song) => _createMediaItem(song))
-    );
+    final mediaItems =
+        await Future.wait(musicItems.map((song) => _createMediaItem(song)));
     await _audioHandler.addQueueItems(mediaItems);
 
     // 플레이리스트 업데이트 후 필요한 추가 작업
@@ -79,6 +85,7 @@ class PlayerManager {
       _audioHandler.play();
     }
   }
+
   Future<void> waitForMediaItem() async {
     if (_audioHandler.mediaItem.value != null) return;
 
@@ -93,6 +100,7 @@ class PlayerManager {
       isLiveStreamNotifier.value = currentItem.extras?['isLive'] == true;
     }
   }
+
   Future<void> addAndPlayItem(Map item) async {
     // 라이브 스트림 상태 업데이트
     isLiveStreamNotifier.value = item['isLive'] == true;
@@ -100,7 +108,7 @@ class PlayerManager {
     await _audioHandler.addQueueItem(mediaItem);
     final queue = _audioHandler.queue.value;
     final index = queue.indexOf(mediaItem);
-    if(mediaItem.extras?['url'].contains('webm')) {
+    if (mediaItem.extras?['url'].contains('webm')) {
       Fluttertoast.showToast(
         msg: "실행할 수 없는 미디어입니다.",
         toastLength: Toast.LENGTH_LONG,
@@ -130,11 +138,13 @@ class PlayerManager {
       }
     }
   }
+
   void _updateLiveStreamState(MediaItem mediaItem) {
     currentSongTitleNotifier.value = mediaItem.title;
     currentSongArtUriNotifier.value = mediaItem.artUri?.toString() ?? '';
     // 필요한 경우 다른 상태 업데이트
   }
+
   void _listenToChangesInPlaylist() {
     _audioHandler.queue.listen((playlist) {
       if (playlist.isEmpty) {
@@ -142,7 +152,7 @@ class PlayerManager {
         currentSongTitleNotifier.value = '';
         playlistLengthNotifier.value = 0;
       } else {
-        final newList = playlist.map((item) => item.title).toList();
+        final newList = playlist.toList();
         playlistNotifier.value = newList;
         playlistLengthNotifier.value = newList.length;
       }
@@ -167,9 +177,11 @@ class PlayerManager {
       }
     });
   }
+
   void skipToQueueItem(int index) {
     _audioHandler.skipToQueueItem(index);
   }
+
   void _listenToCurrentPosition() {
     AudioService.position.listen((position) {
       final oldState = progressNotifier.value;
@@ -194,14 +206,28 @@ class PlayerManager {
 
   void _listenToTotalDuration() {
     _audioHandler.mediaItem.listen((mediaItem) {
+      Duration? d = mediaItem?.duration;
+      bool fromGoogle;
+      if(mediaItem != null) {
+         fromGoogle = mediaItem.extras?['url'].contains('googlevideo.com');
+      }else {
+        fromGoogle = false;
+      }
+      Duration totalValue =
+        d != null
+          ? Platform.isIOS && fromGoogle
+            ? d ~/ 2
+            : d
+          : Duration.zero;
       final oldState = progressNotifier.value;
       progressNotifier.value = ProgressBarState(
         current: oldState.current,
         buffered: oldState.buffered,
-        total: mediaItem?.duration ?? Duration.zero,
+        total: totalValue
       );
     });
   }
+
   void _listenToChangesInSong() {
     _audioHandler.mediaItem.listen((mediaItem) {
       if (mediaItem != null) {
@@ -234,6 +260,7 @@ class PlayerManager {
       }
     });
   }
+
   // deprecated
   // MediaItem? getCurrentMediaItem() {
   //   // currentSongTitleNotifier의 값이 특정 문자열이 아닐 때만 MediaItem 반환
@@ -273,24 +300,24 @@ class PlayerManager {
       print('Stack trace: $stackTrace');
     }
   }
+
   void pause() => _audioHandler.pause();
 
   void seek(Duration position) => _audioHandler.seek(position);
 
   void previous() async {
-    if(playlistLengthNotifier.value > 0) {
+    if (playlistLengthNotifier.value > 0) {
       await _audioHandler.skipToPrevious();
       _updateLiveStreamStatus();
     }
   }
+
   void next() async {
-    if(playlistLengthNotifier.value > 0) {
+    if (playlistLengthNotifier.value > 0) {
       await _audioHandler.skipToNext();
       _updateLiveStreamStatus();
       updateCurrentMediaItem(currentMediaItemNotifier.value);
-
     }
-
   }
 
   void repeat() {
@@ -350,7 +377,7 @@ class PlayerManager {
       id: song['id'].toString(),
       album: song['album'] ?? '',
       title: song['isLive'] ? '${song['title']} (라이브)' : (song['title'] ?? ''),
-          artUri: Uri.parse(song['imageUrl'] ?? ''),
+      artUri: Uri.parse(song['imageUrl'] ?? ''),
       extras: {
         'author': song['author'] ?? '',
         'url': await _getAudioUrl(song['audioUrl']),
@@ -377,5 +404,4 @@ class PlayerManager {
     // print('audioUrl:$url');
     return url;
   }
-
 }

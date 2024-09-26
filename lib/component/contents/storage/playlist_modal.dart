@@ -3,14 +3,16 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:webview_ex/component/contents/list_item.dart';
+import 'package:webview_ex/component/contents/storage/list_item.dart';
 import 'package:webview_ex/component/white_button.dart';
 import '../../../service/api_service.dart';
+import '../../../service/contents/mapping_service.dart';
 import '../../../service/dependency_injecter.dart';
 import '../../../service/player_manager.dart';
 import '../../../store/secure_storage.dart';
 import '../../../const/contents/content_type.dart';
 import '../../../store/store_service.dart';
+
 
 class PlaylistModal extends StatefulWidget {
   final Map<String, dynamic> item;
@@ -26,6 +28,7 @@ class _PlaylistModalState extends State<PlaylistModal>
     with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final ApiService _apiService = ApiService();
+  final MappingService _mappingService = MappingService();
   final secureStorage = getIt<SecureStorage>();
   final _storeService = getIt<StoreService>();
   final _playerManager = getIt<PlayerManager>();
@@ -77,7 +80,7 @@ class _PlaylistModalState extends State<PlaylistModal>
       );
       print('playlistData:$playlistData');
       setState(() {
-        playlistItems = _mapItems(playlistData);
+        playlistItems = _mappingService.mapItemsFromStoreList(playlistData);
         selectedItems = List.generate(playlistItems.length, (_) => false);
       });
     } catch(e) {
@@ -368,18 +371,6 @@ class _PlaylistModalState extends State<PlaylistModal>
                           size: Size(50, 50),
                           title: '전체 재생'
                       )
-                      // ElevatedButton(
-                      //   onPressed: () {
-                      //     _playSelected();
-                      //   },
-                      //   child: Text('선택 재생'),
-                      // ),
-                      // ElevatedButton(
-                      //   onPressed: () {
-                      //     _playAll();
-                      //   },
-                      //   child: Text('전체 재생'),
-                      // ),
                     ],
                   ),
                 ),
@@ -389,41 +380,5 @@ class _PlaylistModalState extends State<PlaylistModal>
         ),
       ),
     );
-  }
-
-
-
-  T? getEnumFromString<T extends Enum>(String str, List<T> values) {
-    try {
-      return values.firstWhere((e) => e.name.toLowerCase() == str.toLowerCase());
-    } on StateError {
-      return null; // 일치하는 enum 값이 없을 경우
-    }
-  }
-  List<Map<String, dynamic>> _mapItems(List<dynamic> apiData) {
-    return apiData.map((item) => {
-      'type': getEnumFromString(item['category'], ContentType.values),
-      'id': item['id'] ?? 0,
-      'opening': item['openinig'] ?? 0,
-      'imageUrl': item['audio_thumbnail'] ?? 'asset/images/upset.png',
-      'title': item['title'] ?? '',
-      'subtitle': item['content'] ?? '',
-      'listerCount': item['view_count'] ?? '',
-      'viewCount': item['view_count'] ?? 0,
-      'shareCount': item['share_count'] ?? 0,
-      'likeCount': item['like_count'] ?? 0,
-      'isLike': item['is_like'] == 1,
-      'audioUrl': item['audio_url'] ?? '',
-      'file': item['file'] ?? '',
-
-      'isLive': item['live_status'] == 1 ? true : false,
-      'startTime' : item['startTime'] ?? '14:00',
-      'endTime' : item['endTime'] ?? '',
-
-      'album': item['title'] ?? '',
-
-      'createdAt': item['created_at'] ?? '',
-      'diffAt': item['diff_at'] ?? '',
-    }).toList();
   }
 }

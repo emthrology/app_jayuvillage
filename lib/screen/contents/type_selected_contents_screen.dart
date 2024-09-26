@@ -4,9 +4,10 @@ import '../../component/contents/music_item.dart';
 import '../../component/contents/news_item.dart';
 import '../../component/contents/podcast_item.dart';
 import '../../component/contents/video_item.dart';
-import '../../component/mini_audio_player.dart';
+import '../../component/contents/player/mini_audio_player.dart';
 import '../../const/contents/content_type.dart';
 import '../../service/api_service.dart';
+import '../../service/contents/mapping_service.dart';
 
 class TypeSelectedContentsScreen extends StatefulWidget {
   const TypeSelectedContentsScreen({super.key, required this.contentType});
@@ -21,6 +22,7 @@ class TypeSelectedContentsScreen extends StatefulWidget {
 class _TypeSelectedContentsScreenState
     extends State<TypeSelectedContentsScreen> with TickerProviderStateMixin {
   final ApiService _apiService = ApiService();
+  final MappingService _mappingService = MappingService();
   late List<dynamic> subcategory = [];
   List<dynamic> sortings =[{'desc':'최신순'},{'like':'인기순'},{'asc':'날짜순'}];
   List<dynamic> subList = [];
@@ -271,10 +273,10 @@ class _TypeSelectedContentsScreenState
           endpoint: 'audios-list', queries: queryParams);
       // print('data:$data');
       if(subList.isEmpty || reloadFetch) {
-        subList = _mapItems(data, widget.contentType);
+        subList = _mappingService.mapItems(data, widget.contentType);
         reloadFetch = false;
       } else {
-        List<dynamic> iterable = _mapItems(data, widget.contentType);
+        List<dynamic> iterable = _mappingService.mapItems(data, widget.contentType);
         subList.addAll(iterable);
       }
     } catch (e) {
@@ -298,32 +300,6 @@ class _TypeSelectedContentsScreenState
     Navigator.of(context).pop();
   }
 
-  List<Map<String, dynamic>> _mapItems(
-      List<dynamic> apiData, ContentType type) {
-    return apiData
-        .map((item) => {
-              'type': type,
-              'id': item['id'] ?? 0,
-              'opening': item['openinig'] ?? 0,
-              'imageUrl': item['audio_thumbnail'] ?? 'asset/images/upset.png',
-              'title': item['title'] ?? '',
-              'subtitle': item['content'] ?? '',
-              'listerCount': item['view_count'] ?? '',
-              'viewCount': item['view_count'] ?? 0,
-              'shareCount': item['share_count'] ?? 0,
-              'likeCount': item['like_count'] ?? 0,
-              'isLike': item['is_like'] == 1,
-              'audioUrl': item['audio_url'] ?? '',
-              'file': item['file'] ?? '',
-              'isLive': item['live_status'] == 1 ? true : false,
-              'startTime': item['startTime'] ?? '14:00',
-              'endTime': item['endTime'] ?? '',
-              'album': item['title'] ?? '',
-              'createdAt': item['created_at'] ?? '',
-              'diffAt': item['diff_at'] ?? '',
-            })
-        .toList();
-  }
   String _getContentTypeValue(ContentType type) {
     switch (type) {
       case ContentType.video:

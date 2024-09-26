@@ -4,8 +4,8 @@ import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../component/comments_section.dart';
-import '../../component/contents/detail_section.dart';
-import '../../component/contents/social_buttons.dart';
+import '../../component/contents/player/detail_section.dart';
+import '../../component/contents/player/social_buttons.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
 import 'contents_index_screen.dart';
