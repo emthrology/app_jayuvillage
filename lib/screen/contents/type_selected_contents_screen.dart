@@ -10,9 +10,10 @@ import '../../service/api_service.dart';
 import '../../service/contents/mapping_service.dart';
 
 class TypeSelectedContentsScreen extends StatefulWidget {
-  const TypeSelectedContentsScreen({super.key, required this.contentType});
+  const TypeSelectedContentsScreen({super.key, required this.contentType, required this.subtitle});
 
   final ContentType contentType;
+  final String subtitle;
 
   @override
   State<TypeSelectedContentsScreen> createState() =>
@@ -90,7 +91,7 @@ class _TypeSelectedContentsScreenState
                                   });
                                 },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
@@ -236,11 +237,10 @@ class _TypeSelectedContentsScreenState
     });
     try {
       final data = await _apiService.fetchItems(endpoint: 'audios-category');
-      print('subcategory:$data');
       setState(() {
         subcategory = data;
         if (subcategory.isNotEmpty) {
-          selectedSubcategory = subcategory.first['name'];
+          selectedSubcategory = widget.subtitle;
           _loadList({'category':_getContentTypeValue(widget.contentType),'sub_category': selectedSubcategory, 'sorts': selectedSorting.keys.first});
         }
       });

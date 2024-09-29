@@ -11,6 +11,9 @@ class SecureStorage {
     return await storage.read(key:key) ?? 'No such data';
   }
 
+  void deleteAllData()  {
+    storage.deleteAll();
+  }
 
   deleteSecureData(String key) async {
     await storage.delete(key: key);

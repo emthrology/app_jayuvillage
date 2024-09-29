@@ -68,6 +68,12 @@ class _PlayerPlaylistModalState extends State<PlayerPlaylistModal>
                       itemBuilder: (context, index) {
                         return ListTile(
                           title: MiniListItem(mediaItem: playlistTitles[index]),
+                          trailing: IconButton(
+                            icon: Icon(Icons.more_vert),
+                            onPressed: () {
+                              _showOptions(context, index);
+                            },
+                          ),
                           onTap: () => playerManager.skipToQueueItem(index),
                           selected: playlistTitles[index].title ==
                               playerManager.currentSongTitleNotifier.value,
@@ -81,6 +87,40 @@ class _PlayerPlaylistModalState extends State<PlayerPlaylistModal>
           ),
         ),
       ),
+    );
+  }
+  void _showOptions(BuildContext context, int index) {
+    showModalBottomSheet(
+      backgroundColor: Colors.white,
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ListTile(
+            //   leading: Icon(Icons.add),
+            //   title: Text('보관함에 추가'),
+            //   onTap: () {},
+            // ),
+            ListTile(
+              leading: Icon(Icons.play_arrow),
+              title: Text('바로 재생'),
+              onTap: () =>{
+                playerManager.skipToQueueItem(index),
+                Navigator.pop(context)
+              }
+            ),
+            ListTile(
+              leading: Icon(Icons.remove),
+              title: Text('재생목록에서 제거'),
+              onTap: () => {playerManager.removeAt(index),
+                Navigator.pop(context)
+              }
+            ),
+            SizedBox(height: 10.0,)
+          ],
+        );
+      },
     );
   }
 }

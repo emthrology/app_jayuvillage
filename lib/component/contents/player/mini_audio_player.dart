@@ -1,5 +1,5 @@
 
-import 'package:get_it/get_it.dart';
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/service/player_manager.dart';
@@ -16,7 +16,7 @@ class MiniAudioPlayer extends StatefulWidget {
 }
 
 class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
-  final pageManager = getIt<PlayerManager>();
+  final playerManager = getIt<PlayerManager>();
 
   late AudioPlayer player;
   String currentTitle = '';
@@ -36,15 +36,13 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
       );
     }
   }
+
   @override
   void initState() {
     super.initState();
-    // _pageManager = PageManager();
-    // pageManager.setLoopMode(LoopMode.all);
   }
   @override
   void dispose() {
-    // _pageManager.dispose();
     super.dispose();
   }
   @override
@@ -57,7 +55,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
           child: Container(
             alignment: Alignment.centerLeft,
             child: ValueListenableBuilder<String>(
-              valueListenable: pageManager.currentSongArtUriNotifier,
+              valueListenable: playerManager.currentSongArtUriNotifier,
               builder: (_, artUri, __) {
                 return artUri.isNotEmpty
                     ? Image.network(
@@ -65,6 +63,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
+
                   errorBuilder: (context, error, stackTrace) {
                     return Image.asset(
                       'asset/images/default_thumbnail.png',
@@ -92,7 +91,7 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
               alignment: Alignment.centerLeft,
               // width: 160,
               child: ValueListenableBuilder<String>(
-                  valueListenable: pageManager.currentSongTitleNotifier,
+                  valueListenable: playerManager.currentSongTitleNotifier,
                   builder: (_, title,__) {return Text(title);}
               )
             ),
@@ -157,13 +156,12 @@ class NextSongButton extends StatelessWidget {
   const NextSongButton({super.key});
   @override
   Widget build(BuildContext context) {
-    final pageManager = getIt<PlayerManager>();
     return ValueListenableBuilder<bool>(
-      valueListenable: pageManager.isLastSongNotifier,
+      valueListenable: playerManager.isLastSongNotifier,
       builder: (_, isLast, __) {
         return IconButton(
           icon: const Icon(Icons.fast_forward),
-          onPressed: (isLast) ? null : pageManager.next,
+          onPressed: (isLast) ? null : playerManager.next,
         );
       },
     );

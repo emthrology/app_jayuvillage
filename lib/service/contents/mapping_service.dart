@@ -36,6 +36,9 @@ class MappingService {
       return null; // 일치하는 enum 값이 없을 경우
     }
   }
+  String? getStringFromEnum<T extends Enum>(T enumValue) {
+    return enumValue.name;
+  }
   List<Map<String, dynamic>> mapItemsFromStoreList(List<dynamic> apiData) {
     return apiData.map((item) => {
       'type': getEnumFromString(item['category'], ContentType.values),

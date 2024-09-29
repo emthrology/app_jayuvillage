@@ -270,25 +270,27 @@ class _PlaylistModalState extends State<PlaylistModal>
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      if (_editMode) {
-                        setState(() {
-                          //TODO delete demo
-                          _editMode = false;
-                          _animationController.reverse();
+                  Flexible(
+                    child: TextButton(
+                      onPressed: () {
+                        if (_editMode) {
+                          setState(() {
+                            //TODO delete demo
+                            _editMode = false;
+                            _animationController.reverse();
 
-                          saveChanges();
-                        });
-                      } else {
-                        _enterEditMode();
-                      }
-                    },
-                    child: Text(_editMode ? '완료' : '수정',
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          color: _editMode ? Color(0xff0baf00) : Colors.black
-                        )),
+                            saveChanges();
+                          });
+                        } else {
+                          _enterEditMode();
+                        }
+                      },
+                      child: Text(_editMode ? '완료' : '수정',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            color: _editMode ? Color(0xff0baf00) : Colors.black
+                          )),
+                    ),
                   ),
                 ],
               ),

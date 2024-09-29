@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import '../../service/player_manager.dart';
 import '../../notifiers/play_button_notifier.dart';
 import '../../notifiers/progress_notifier.dart';
 import '../../notifiers/repeat_button_notifier.dart';
+import '../../store/secure_storage.dart';
 
 class AudioScreen extends StatefulWidget {
   const AudioScreen({super.key});
@@ -27,16 +30,26 @@ final playerManager = getIt<PlayerManager>();
 class _AudioScreenState extends State<AudioScreen> {
   late AudioPlayer player;
   final ApiService _apiService = ApiService();
-
+  final secureStorage = getIt<SecureStorage>();
   // bool _isLoading = true;
   List<dynamic> bags = [];
   String currentTitle = '';
+
   final mediaItem = playerManager.currentMediaItemNotifier.value;
+
+  Future<dynamic> getValue(key) async {
+    String value = await secureStorage.readSecureData(key);
+    return value;
+  }
 
   Future<void> _loadBags() async {
     try {
+      String sessionData = await getValue('session');
+      Map<String, dynamic> json = jsonDecode(sessionData);
+      int user_id = json['success']?['id'];
       final bagsData = await _apiService.fetchItems(
         endpoint: 'bagitems',
+        queries: {'user_id':'$user_id'}
       );
       setState(() {
         bags = bagsData;
@@ -50,6 +63,7 @@ class _AudioScreenState extends State<AudioScreen> {
   void initState() {
     super.initState();
     _loadBags();
+
     // getIt<PageManager>().init();
   }
 
@@ -119,7 +133,7 @@ class _AudioScreenState extends State<AudioScreen> {
                       // AddRemoveSongButtons(),
                       AudioProgressBar(),
                       AudioControlButtons(),
-                      SocialButtons(bags: bags, mediaItem: mediaItem!),
+                      SocialButtons(bags: bags, mediaItem: mediaItem!, contentType:mediaItem!.extras?['type'],),
                       ValueListenableBuilder<MediaItem?>(
                         valueListenable: playerManager.currentMediaItemNotifier,
                         builder: (_, mediaItem, __) {
@@ -131,7 +145,7 @@ class _AudioScreenState extends State<AudioScreen> {
                       SizedBox(
                         height: 10,
                       ),
-                      CommentsSection(),
+                      CommentsSection(contentType:mediaItem!.extras?['type'], commentableId: mediaItem!.id,),
                     ],
                   )),
               Padding(

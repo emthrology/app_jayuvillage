@@ -1,13 +1,18 @@
+import 'package:dio/dio.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_ex/const/contents/content_type.dart';
 import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../component/comments_section.dart';
 import '../../component/contents/player/detail_section.dart';
 import '../../component/contents/player/social_buttons.dart';
+import '../../service/api_service.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
+import '../../store/secure_storage.dart';
+import '../../store/store_service.dart';
 import 'contents_index_screen.dart';
 
 class VideoScreen extends StatefulWidget {
@@ -21,15 +26,29 @@ class VideoScreen extends StatefulWidget {
 
 class _VideoScreenState extends State<VideoScreen> {
   final playerManager = getIt<PlayerManager>();
+  final _storeService = getIt<StoreService>();
+  final ApiService _apiService = ApiService();
   late YoutubePlayerController _controller;
   bool _isFullScreen = false;
   @override
   void initState() {
+    addUp();
     super.initState();
     _init();
     playerManager.stop();
     makeMediaItem(widget.item);
   }
+  Future<void> addUp() async {
+    try {
+      Response res = await _apiService.postItemWithResponse(endpoint: 'audios-count/${widget.item['id']}', body: {});
+      if ((res.statusCode == 200 || res.statusCode == 201) && res.data is! String) {
+        _storeService.clearCache();
+      }
+    }catch(e) {
+      throw Exception("API 요청 실패");
+    }
+  }
+
   Future<void> _init() async {
     final videoId = YoutubePlayer.convertUrlToId(widget.item['audioUrl']);
     // print('videoId:$videoId');
@@ -53,6 +72,7 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
   MediaItem makeMediaItem(Map<String, dynamic> item) {
+    print('vodeoScreenMakeMediaItem:$item');
     final mediaItem = MediaItem(
       id: item['id'].toString(),
       album: item['album'] ?? '',
@@ -97,16 +117,17 @@ class _VideoScreenState extends State<VideoScreen> {
                 ),
                 builder: (context, player) {
                   return Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       // some widgets
                       player,
                       //some other widgets
-                      SocialButtons(bags: [], mediaItem: makeMediaItem(widget.item)),
+                      SocialButtons(bags: [], mediaItem: makeMediaItem(widget.item), contentType:ContentType.video),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4.0),
                           child: DetailSection(mediaItem: makeMediaItem(widget.item))),
                       SizedBox(height: 10,),
-                      CommentsSection()
+                      CommentsSection(contentType: ContentType.video, commentableId: widget.item['id'].toString(),)
                     ],
                   );
                 },

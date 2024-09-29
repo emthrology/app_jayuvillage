@@ -9,7 +9,8 @@ class MusicItem extends StatelessWidget {
   final Map<String, dynamic> item;
   final double radius = 10.0;
   final double titleSize = 24.0;
-  final double fontSize = 18.0;
+  final double fontSize = 15.0;
+  final double contentsSize = 13.0;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -28,8 +29,13 @@ class MusicItem extends StatelessWidget {
                   child: Image.network(
                     item['imageUrl'],
                     fit: BoxFit.contain,
-                    width: 84.0,
-
+                    width: 96.0,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'asset/images/default_thumbnail.png',
+                        width: 96.0,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -37,6 +43,7 @@ class MusicItem extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -44,6 +51,7 @@ class MusicItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: TextStyle(
+                          fontFamily: 'NotoSans',
                           fontSize: titleSize,
                           color: Colors.black,
                           fontWeight: FontWeight.w900,
@@ -51,8 +59,10 @@ class MusicItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${item['album']}·조회수${formatNumber(item['viewCount'])}·공유${formatNumber(item['shareCount'])}',
+                        ' 조회수${formatNumber(item['viewCount'])} 공유${formatNumber(item['shareCount'])}',
                         style: TextStyle(
+                          fontFamily: 'NotoSans',
+                          fontWeight: FontWeight.w600,
                           fontSize: fontSize,
                           color: Colors.green,
                         ),
@@ -62,7 +72,9 @@ class MusicItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         style: TextStyle(
-                          fontSize: fontSize,
+                          fontFamily: 'NotoSans',
+                          fontSize: contentsSize,
+                          height: 0.9
                         ),
                         softWrap: true,
                       ),

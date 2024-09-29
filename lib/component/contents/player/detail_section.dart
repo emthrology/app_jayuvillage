@@ -11,7 +11,7 @@ class DetailSection extends StatefulWidget {
 }
 
 class _DetailSectionState extends State<DetailSection> {
-  bool _isExpanded = false;
+  bool _isExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class _DetailSectionState extends State<DetailSection> {
           Row(
             children: [
               Text(
-                widget.mediaItem.album ?? '',
+                widget.mediaItem.album != null ? '' : widget.mediaItem.album!,
                 maxLines: 2,
                 style: TextStyle(
                   fontFamily: 'NotoSans',
@@ -40,7 +40,9 @@ class _DetailSectionState extends State<DetailSection> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              Text('·'),
+              Text(
+                  widget.mediaItem.album != null ? '' : '·'
+              ),
               Text(
                 widget.mediaItem.extras?['author'] ?? '',
                 maxLines: 2,

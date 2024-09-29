@@ -83,16 +83,17 @@ class VideoItem extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.favorite_border),
-                label: Text('좋아요 1'),
-              ),
-              TextButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.share),
-                label: Text('공유하기'),
-              ),
+              // TextButton.icon(
+              //   onPressed: () {},
+              //   icon: Icon(Icons.favorite_border),
+              //   label: Text('좋아요 1'),
+              // ),
+              // TextButton.icon(
+              //   onPressed: () {},
+              //   icon: Icon(Icons.share),
+              //   label: Text('공유하기'),
+              // ),
+              SizedBox(height: 10,)
             ],
           ),
           ]

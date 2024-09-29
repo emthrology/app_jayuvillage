@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../../../const/contents/content_type.dart';
 import '../../service/api_service.dart';
+import '../../service/contents/mapping_service.dart';
+import '../../service/dependency_injecter.dart';
+import '../../service/player_manager.dart';
+import '../../store/secure_storage.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -14,12 +19,17 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
-  final double titleSize = 24.0;
-  final double fontSize = 18.0;
+  final _mappingService = MappingService();
+  final secureStorage = getIt<SecureStorage>();
+  String userId = '';
+  late String sessionData;
+  final double titleSize = 18.0;
+  final double fontSize = 14.0;
   final String endpoint = 'audios-search';
   Timer? _debounce;
   bool _showCancelButton = false;
   int _categoryIndex = 1;
+  final playerManager = getIt<PlayerManager>();
   List<bool> _selections = [true, false];
   List<dynamic> searchResults = [];
   List<String> recentSearches = ['광화문애가', '첫번째', '두번째'];
@@ -95,10 +105,20 @@ class _SearchScreenState extends State<SearchScreen> {
     },
   ];
 
+  Future<String> _getSessionValue() async {
+    sessionData = await secureStorage.readSecureData('session');
+    Map<String, dynamic> sessionObject = jsonDecode(sessionData);
+    setState(() {
+      userId = sessionObject['success']['id'].toString();
+    });
+    return userId;
+
+  }
   Future<void> _search() async {
     Map<String, String> queries = {
       "category_id": "$_categoryIndex",
-      "search": _searchController.text
+      "search": _searchController.text,
+      "user_id": await _getSessionValue()
     };
     // print(queries);
     try {
@@ -106,7 +126,7 @@ class _SearchScreenState extends State<SearchScreen> {
           await _apiService.fetchItems(endpoint: endpoint, queries: queries);
       // print('searchData:$searchData');
       setState(() {
-        searchResults = searchData;
+        searchResults = _mappingService.mapItemsFromStoreList(searchData);
         _showCancelButton = true;
       });
     } catch (e) {
@@ -184,7 +204,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
-                            hintText: '아티스트, 노래, 보관함, 가사',
+                            hintText: '컨텐츠, 보관함',
                             hintStyle: TextStyle(
                               color: Colors.grey,
                             ),
@@ -250,58 +270,95 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               SizedBox(height: 16),
               if (searchResults.isEmpty && _searchController.text.isNotEmpty)
-                Center(child: Text('항목이 없습니다'))
+                Center(child:
+                Text('항목이 없습니다')
+                )
               else if (searchResults.isNotEmpty)
                 Expanded(
                   child: ListView.builder(
                     itemCount: searchResults.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        leading: Image.asset(
-                            searchResults[index]['audio_thumbnail']),
-                        title: Text(searchResults[index]['title']),
-                        subtitle: Text(searchResults[index]['content']),
+                        leading: Image.network(
+                          searchResults[index]['imageUrl'],
+                          fit: BoxFit.contain,
+                          width: 60.0,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'asset/images/default_thumbnail.png',
+                              width: 60.0,
+                            );
+                          },
+                        ),
+                        title: Text(
+                            searchResults[index]['title'],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                              fontFamily: 'NotoSans',
+                              fontSize: titleSize,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              overflow: TextOverflow.ellipsis
+                          ),
+                        ),
+                        subtitle: Text(
+                            searchResults[index]['subtitle'],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              fontFamily: 'NotoSans',
+                              fontSize: fontSize,
+                              height: 0.9
+                          ),
+                          softWrap: true,
+                        ),
                         trailing: IconButton(
                           icon: Icon(Icons.more_vert),
                           onPressed: () {
                             _showOptions(context);
                           },
                         ),
+                        onTap: () => playerManager.addAndPlayItem(searchResults[index]),
                       );
                     },
                   ),
                 )
               else
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('최근 검색한 항목', style: TextStyle(fontSize: 18)),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              recentSearches.clear();
-                            });
-                          },
-                          child: Text('지우기',
-                              style: TextStyle(color: Colors.green)),
-                        ),
-                      ],
-                    ),
-                    ...recentSearches.map((search) => ListTile(
-                          leading: Image.asset('asset/images/music_jacket.png'),
-                          title: Text(search),
-                          subtitle: Text('음원 - 광화문레코드'),
-                          trailing: IconButton(
-                            icon: Icon(Icons.more_vert),
-                            onPressed: () {
-                              _showOptions(context);
-                            },
-                          ),
-                        )),
-                  ],
+                Center(
+                  child: Text('항목이 없습니다')
                 )
+                // Column(
+                //   children: [
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Text('최근 검색한 항목', style: TextStyle(fontSize: 18)),
+                //         TextButton(
+                //           onPressed: () {
+                //             setState(() {
+                //               recentSearches.clear();
+                //             });
+                //           },
+                //           child: Text('지우기',
+                //               style: TextStyle(color: Colors.green)),
+                //         ),
+                //       ],
+                //     ),
+                //     ...recentSearches.map((search) => ListTile(
+                //           leading: Image.asset('asset/images/music_jacket.png'),
+                //           title: Text(search),
+                //           subtitle: Text('음원 - 광화문레코드'),
+                //           trailing: IconButton(
+                //             icon: Icon(Icons.more_vert),
+                //             onPressed: () {
+                //               _showOptions(context);
+                //             },
+                //           ),
+                //         )),
+                //   ],
+                // )
             ],
           )),
         ),
@@ -326,16 +383,12 @@ class _SearchScreenState extends State<SearchScreen> {
               title: Text('바로 재생'),
               onTap: () {},
             ),
-            ListTile(
-              leading: Icon(Icons.share),
-              title: Text('공유'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text('상세페이지'),
-              onTap: () {},
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.share),
+            //   title: Text('공유'),
+            //   onTap: () {},
+            // ),
+            SizedBox(height: 10,)
           ],
         );
       },

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/state_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/contents/player/mini_audio_player.dart';
 import 'package:webview_ex/component/quick_btns.dart';
@@ -16,8 +17,10 @@ import 'package:webview_ex/service/image_picker_service.dart';
 import 'package:webview_ex/service/url_launch_service.dart';
 import 'package:webview_ex/store/secure_storage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
 // Import for Android features.
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
 // Import for iOS features.
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../const/tabs.dart';
@@ -31,6 +34,7 @@ import '../service/api_service.dart';
 import '../service/dependency_injecter.dart';
 import '../store/store_service.dart';
 import 'contents/contents_index_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
 
@@ -95,9 +99,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     printer: PrettyPrinter(), // Use the PrettyPrinter to format and print log
     output: null, // Use the default LogOutput (-> send everything to console)
   );
+
   Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage rm) async {
     await Firebase.initializeApp();
   }
+
   Future<void> _firebaseSubscribe() async {
     await FirebaseMessaging.instance.subscribeToTopic("jayuvillage");
     await FirebaseMessaging.instance.subscribeToTopic("notice");
@@ -105,12 +111,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // await FirebaseMessaging.instance.subscribeToTopic("video"); //TODO check here
     await FirebaseMessaging.instance.subscribeToTopic("webtoon");
   }
+
   Future<void> setBadgeCount(int count) async {
     final bool isAppBadge = await FlutterAppBadger.isAppBadgeSupported();
     if (isAppBadge == true) {
       await FlutterAppBadger.updateBadgeCount(count);
     }
   }
+
   // 배지 숫자를 0으로 초기화하는 함수
   Future<void> resetBadgeCount() async {
     final bool isAppBadge = await FlutterAppBadger.isAppBadgeSupported();
@@ -120,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   String shareUrlPath = '';
+
   void _onShareWithResult(uri) async {
     //TODO kakao share
     // final kakaoAvail = await ShareClient.instance.isKakaoTalkSharingAvailable();
@@ -148,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final scaffoldMessenger = ScaffoldMessenger.of(context!);
     ShareResult shareResult;
-    if(context != null) {
+    if (context != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) async {
         shareResult = await Share.shareUri(
           Uri.parse(uri),
@@ -157,15 +166,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           return error;
         });
         bool result = shareResult.status == ShareResultStatus.success;
-        if(result) {
+        if (result) {
           scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
-
         }
       });
-
     }
-
   }
+
   SnackBar getResultSnackBar(ShareResult result) {
     return SnackBar(
       content: Column(
@@ -179,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
   Future<void> _loadData() async {
     // await getValue('phone');
     // await getValue('password');
@@ -196,16 +204,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
   }
+
   void _setComponents(String url) {
     if (sessionValid) {
       setQuickBtns('AFTERLOGIN');
     } else {
       setQuickBtns('BEFORELOGIN');
     }
-    if (_quickBtnPages.any((e) => url.contains(e)) || url == 'https://jayuvillage.com/') {
-      url.endsWith('create')
-          ? _showQuickBtns = false
-          : _showQuickBtns = true;
+    if (_quickBtnPages.any((e) => url.contains(e)) ||
+        url == 'https://jayuvillage.com/') {
+      url.endsWith('create') ? _showQuickBtns = false : _showQuickBtns = true;
       if (url.endsWith('mypage')) {
         setQuickBtns('MYPAGE');
       }
@@ -224,16 +232,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     }
   }
-  Future<void> writeValue(String key,String value) async {
+
+  Future<void> writeValue(String key, String value) async {
     await secureStorage.writeSecureData(key, value);
   }
 
   void _getFCMToken(userId) async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     String? token = await messaging.getToken();
-    _apiService.storeToken(token,userId);
+    _apiService.storeToken(token, userId);
     // print("FCM Token: $token");
   }
+
   @override
   void initState() {
     super.initState();
@@ -247,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           logger.e(message.notification!.body);
           logger.e(message.data["url"]);
           pushedUrl = message.data["url"];
-          if(pushedUrl != '') {
+          if (pushedUrl != '') {
             _controller.loadRequest(Uri.parse(pushedUrl));
           }
           resetBadgeCount();
@@ -261,12 +271,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           logger.e(message.notification!.body);
           logger.e(message.data["url"]);
           pushedUrl = message.data["url"];
-          if(pushedUrl != '') {
+          if (pushedUrl != '') {
             _controller.loadRequest(Uri.parse(pushedUrl));
           }
           resetBadgeCount();
-      }
         }
+      }
     });
     FirebaseMessaging.instance
         .getInitialMessage()
@@ -277,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           logger.e(message.notification!.body);
           logger.e(message.data["url"]);
           pushedUrl = message.data["url"];
-          if(pushedUrl != '') {
+          if (pushedUrl != '') {
             _controller.loadRequest(Uri.parse(pushedUrl));
           }
           resetBadgeCount();
@@ -286,9 +296,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     setInitialBtnState();
-    if(pushedUrl == '') {
+    if (pushedUrl == '') {
       _currentUrl = widget.homeUrl;
-    }else {
+    } else {
       _currentUrl = Uri.parse(pushedUrl);
     }
     tabController = TabController(length: TABS.length, vsync: this);
@@ -306,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       params = const PlatformWebViewControllerCreationParams();
     }
     final WebViewController controller =
-    WebViewController.fromPlatformCreationParams(params);
+        WebViewController.fromPlatformCreationParams(params);
     // TODO 이거 커밋하면 큰일난다
     // if (controller.platform is WebKitWebViewController) {
     //   (controller.platform as WebKitWebViewController).setInspectable(true);
@@ -335,9 +345,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // handleAppLink(url);
             return NavigationDecision.prevent;
           }
-          if(request.url.endsWith('audioplayer')) {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => AudioScreen()));
+          if (request.url.endsWith('audioplayer')) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => AudioScreen()));
             return NavigationDecision.prevent;
           }
           if (request.url.endsWith('login')) {
@@ -345,8 +355,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 builder: (_) => LoginScreen(webController: controller)));
             return NavigationDecision.prevent;
           }
-          if (request.url
-              .startsWith('https://jayuvillage.com/auth/login')) {
+          if (request.url.startsWith('https://jayuvillage.com/auth/login')) {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => LoginScreen(webController: controller)));
             return NavigationDecision.prevent;
@@ -374,38 +383,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ))
       ..addJavaScriptChannel('loginChannel',
           onMessageReceived: (JavaScriptMessage ms) {
-            Map<String, dynamic> session = jsonDecode(ms.message);
-            print("session:$session");
-            if (session.containsKey('success')) {
-              setState(() {
-                // writeValue('phone',_phoneController.text);
-                // writeValue('password',_passwordController.text);
-                writeValue('session', jsonEncode(session));
-              });
-              //send fcm token to server;
-              _getFCMToken(session['success']['id']);
+        Map<String, dynamic> session = jsonDecode(ms.message);
+        print("session:$session");
+        if (session.containsKey('success')) {
+          setState(() {
+            // writeValue('phone',_phoneController.text);
+            // writeValue('password',_passwordController.text);
+            writeValue('session', jsonEncode(session));
+          });
+          //send fcm token to server;
+          _getFCMToken(session['success']['id']);
 
-              //TODO 로그인 데이터를 바탕으로 퀵버튼 수정하기
-              sessionValid = session.containsKey('success') ? true : false;
-              setInitialBtnState();
-              // setQuickBtns('AFTERLOGIN');
-              // Navigator.of(context).pushReplacement(
-              //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
-            }else if(session.containsKey('error')) {
-              Fluttertoast.showToast(
-                  msg: "오류가 발생하였습니다.",
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.TOP,
-                  timeInSecForIosWeb: 2,
-                  backgroundColor: Color(0xff0baf00),
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-            }else {
-              print(ms.message);
-            }
-          })
-      ..addJavaScriptChannel('thruFlutter', onMessageReceived: (JavaScriptMessage ms) {
+          //TODO 로그인 데이터를 바탕으로 퀵버튼 수정하기
+          sessionValid = session.containsKey('success') ? true : false;
+          setInitialBtnState();
+          // setQuickBtns('AFTERLOGIN');
+          // Navigator.of(context).pushReplacement(
+          //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+        } else if (session.containsKey('error')) {
+          Fluttertoast.showToast(
+              msg: "오류가 발생하였습니다.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 2,
+              backgroundColor: Color(0xff0baf00),
+              textColor: Colors.white,
+              fontSize: 16.0);
+        } else {
+          print(ms.message);
+        }
+      })
+      ..addJavaScriptChannel('thruFlutter',
+          onMessageReceived: (JavaScriptMessage ms) {
         // String value = ms.message;
         // Fluttertoast.showToast(
         //   msg: 'isFlutter:$value',
@@ -418,7 +427,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         //
         // );
       })
-      ..addJavaScriptChannel('alertChannel', onMessageReceived: (JavaScriptMessage ms) {
+      ..addJavaScriptChannel('alertChannel',
+          onMessageReceived: (JavaScriptMessage ms) {
         Fluttertoast.showToast(
           msg: ms.message,
           toastLength: Toast.LENGTH_LONG,
@@ -427,37 +437,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: Color(0xff8bf05d),
           textColor: Colors.black,
           fontSize: 24.0,
-
         );
       })
       ..addJavaScriptChannel('logoutChannel',
           onMessageReceived: (JavaScriptMessage ms) {
-            if (ms.message == 'logout') {
-              deleteData('session');
-              deleteData('phone');
-              deleteData('password');
-              setState(() {
-                storedValue = '';
-                sessionValid = false;
-              });
-              setQuickBtns('BEFORELOGIN');
-            }
-          })
+        print('logout');
+        if (ms.message == 'logout') {
+          // deleteData('session');
+          // deleteData('phone');
+          // deleteData('password');
+          secureStorage.deleteAllData();
+          setState(() {
+            storedValue = '';
+            sessionValid = false;
+          });
+          setQuickBtns('BEFORELOGIN');
+        }
+      })
       ..addJavaScriptChannel('hideBtn',
           onMessageReceived: (JavaScriptMessage ms) {
-            setState(() {
-              ms.message.contains('hide')
-                  ? _hideBtnsFromWeb = true
-                  : _hideBtnsFromWeb = false;
-            });
-          })
+        setState(() {
+          ms.message.contains('hide')
+              ? _hideBtnsFromWeb = true
+              : _hideBtnsFromWeb = false;
+        });
+      })
       ..addJavaScriptChannel('getImageFromFlutter',
           onMessageReceived: (JavaScriptMessage ms) {
-            ms.message.contains('camera') ? _getImage(true) : _getImage(false);
-          })
-      ..addJavaScriptChannel('launchUrl', onMessageReceived: (JavaScriptMessage ms){_launchURL(ms.message);})
-      ..addJavaScriptChannel('flutterSetComponents', onMessageReceived: (JavaScriptMessage ms){_setComponents(ms.message);})
-      ..addJavaScriptChannel('flutterShareBtn', onMessageReceived: (JavaScriptMessage ms){
+        ms.message.contains('camera') ? _getImage(true) : _getImage(false);
+      })
+      ..addJavaScriptChannel('launchUrl',
+          onMessageReceived: (JavaScriptMessage ms) {
+        _launchURL(ms.message);
+      })
+      ..addJavaScriptChannel('flutterSetComponents',
+          onMessageReceived: (JavaScriptMessage ms) {
+        _setComponents(ms.message);
+      })
+      ..addJavaScriptChannel('flutterShareBtn',
+          onMessageReceived: (JavaScriptMessage ms) {
         final decodedParams = jsonDecode(ms.message);
         var path = decodedParams['path'];
         var id = decodedParams['id'];
@@ -465,12 +483,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setQuickBtns('SHARE');
       })
       ..loadRequest(_currentUrl);
-      if (controller.platform is AndroidWebViewController) {
-        AndroidWebViewController.enableDebugging(true);
-        (controller.platform as AndroidWebViewController)
-            .setMediaPlaybackRequiresUserGesture(false);
-      }
-      _controller = controller;
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
+    _controller = controller;
   }
 
   // @override
@@ -502,75 +520,75 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             _showQuickBtns && !_hideBtnsFromWeb
                 ? Positioned(
-                bottom: 70,
-                right: 20,
-                child: QuickBtns(
-                  onTap: _onBtnTapped,
-                  btnData: btnData,
-                ))
+                    bottom: 70,
+                    right: 20,
+                    child: QuickBtns(
+                      onTap: _onBtnTapped,
+                      btnData: btnData,
+                    ))
                 // : _currentUrl.toString() == 'https://jayuvillage.com' &&
                 : _currentUrl.toString() == 'https://jayuvillage.com' &&
-                !_hideBtnsFromWeb
-                ? Positioned(
-                bottom: 70,
-                right: 20,
-                child: QuickBtns(
-                  onTap: _onBtnTapped,
-                  btnData: btnData,
-                ))
-                : Container(),
+                        !_hideBtnsFromWeb
+                    ? Positioned(
+                        bottom: 70,
+                        right: 20,
+                        child: QuickBtns(
+                          onTap: _onBtnTapped,
+                          btnData: btnData,
+                        ))
+                    : Container(),
           ]),
         ),
         bottomNavigationBar: _showBottomNav
             ? Stack(
-          children: [
-            BottomNavigationBar(
-              backgroundColor: Colors.white,
-              selectedItemColor: Color(0xff0baf00),
-              unselectedItemColor: Colors.black,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              currentIndex: _currentIndex,
-              type: BottomNavigationBarType.fixed,
-              onTap: _onNavTapped,
-              items: TABS
-                  .map(
-                    (e) =>
-                    BottomNavigationBarItem(
-                        icon: Icon(e.icon), label: e.label),
+                children: [
+                  BottomNavigationBar(
+                    backgroundColor: Colors.white,
+                    selectedItemColor: Color(0xff0baf00),
+                    unselectedItemColor: Colors.black,
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
+                    currentIndex: _currentIndex,
+                    type: BottomNavigationBarType.fixed,
+                    onTap: _onNavTapped,
+                    items: TABS
+                        .map(
+                          (e) => BottomNavigationBarItem(
+                              icon: Icon(e.icon), label: e.label),
+                        )
+                        .toList(),
+                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     RoundBtn(
+                  //         color: Color(0xff0baf00),
+                  //         borderColor: Color(0xff0baf00),
+                  //         text: '조직활동',
+                  //         uri: 'https://jayuvillage.com/organization',
+                  //         onTap: _onBtnTapped),
+                  //   ],
+                  // )
+                ],
               )
-                  .toList(),
-            ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: [
-            //     RoundBtn(
-            //         color: Color(0xff0baf00),
-            //         borderColor: Color(0xff0baf00),
-            //         text: '조직활동',
-            //         uri: 'https://jayuvillage.com/organization',
-            //         onTap: _onBtnTapped),
-            //   ],
-            // )
-          ],
-        )
             : _showCreatePostNav
-            ? BottomNavigationBar(
-                backgroundColor: Colors.white,
-                selectedItemColor: Color(0xff0baf00),
-                unselectedItemColor: Colors.black,
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
-                currentIndex: 1,
-                type: BottomNavigationBarType.fixed,
-                onTap: _onPostNavTapped,
-                items: POSTTABS.map(
-                  (e) =>
-                  BottomNavigationBarItem(
-                    icon: Icon(e.icon), label: e.label),
-                  ).toList(),
-              )
-            : null,
+                ? BottomNavigationBar(
+                    backgroundColor: Colors.white,
+                    selectedItemColor: Color(0xff0baf00),
+                    unselectedItemColor: Colors.black,
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
+                    currentIndex: 1,
+                    type: BottomNavigationBarType.fixed,
+                    onTap: _onPostNavTapped,
+                    items: POSTTABS
+                        .map(
+                          (e) => BottomNavigationBarItem(
+                              icon: Icon(e.icon), label: e.label),
+                        )
+                        .toList(),
+                  )
+                : null,
       ),
     );
   }
@@ -580,37 +598,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       scrollToTop();
     } else if (url == 'share') {
       _onShareWithResult('https://jayuvillage.com/$shareUrlPath');
-    } else if(url == 'audio_player') {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => AudioScreen()));
-    }else {
+    } else if (url == 'audio_player') {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => AudioScreen()));
+    } else {
       setState(() {
-          _controller.loadRequest(Uri.parse(url));
+        _controller.loadRequest(Uri.parse(url));
       });
     }
   }
 
-  void _onNavTapped(index) {
-    setState(() {
-      _currentUrl = Uri.parse(_tabUrls[index]);
-      if(index == 1) {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => ContentsIndexScreen()));
-      }else {
-        _controller.loadRequest(Uri.parse(_tabUrls[index]));
+  void _onNavTapped(index) async {
+    String sessionData = await getSessionValue('session');
+    if (index == 1) {
+      sessionData != 'No such data'
+          ? Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => ContentsIndexScreen()))
+          : Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => LoginScreen(webController: _controller)));
+    } else {
+      _controller.loadRequest(Uri.parse(_tabUrls[index]));
+      setState(() {
+        _currentUrl = Uri.parse(_tabUrls[index]);
         _currentIndex = index;
-      }
-
-    });
+      });
+    }
   }
+
   void _onPostNavTapped(index) {
-    if(index == 0) {
+    if (index == 0) {
       _getImage(true);
     }
-    if(index == 1) {
+    if (index == 1) {
       _controller.runJavaScript('openLinkModal()');
     }
-    if(index == 2) {
+    if (index == 2) {
       _getImage(false);
     }
   }
@@ -628,6 +650,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void setInitialBtnState() {
     sessionValid ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
   }
+
   bool isValidJson(String jsonString) {
     try {
       jsonDecode(jsonString);
@@ -651,6 +674,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       storedValue = value;
     });
   }
+  Future<dynamic> getSessionValue(key) async {
+    String value = await secureStorage.readSecureData(key);
+    return value;
+  }
 
   Future<void> deleteData(String key) async {
     await secureStorage.deleteSecureData(key);
@@ -658,8 +685,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       sessionValid = false;
     }
   }
-
-
 
   Future<void> _launchURL(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -698,8 +723,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       String base64Image = base64Encode(imageBytes);
       //
       _controller.runJavaScript(
-          'imageFromFlutter("data:image/png;base64,$base64Image")'
-      );
+          'imageFromFlutter("data:image/png;base64,$base64Image")');
     } else {
       Fluttertoast.showToast(
         msg: "이미지 등록 실패",

@@ -114,6 +114,8 @@ class _ListPlaylistModalState extends State<ListPlaylistModal> {
     String completeWord = '보관 작업이 ';
 
     try {
+      print('endpoint:$endpoint');
+      print('body:$body');
       Response res = await _apiService.postItemWithResponse(endpoint: endpoint, body: body);
       if ((res.statusCode == 200 || res.statusCode == 201) && res.data is! String) {
         _storeService.clearCache();
@@ -131,6 +133,7 @@ class _ListPlaylistModalState extends State<ListPlaylistModal> {
         throw Exception("API 요청 실패");
       }
     } catch (e) {
+      print(e);
       Fluttertoast.showToast(
           msg: "$completeWord 실패하였습니다.",
           toastLength: Toast.LENGTH_LONG,

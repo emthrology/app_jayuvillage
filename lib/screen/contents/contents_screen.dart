@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webview_ex/component/contents/build_sub_section.dart';
 import 'package:webview_ex/component/white_button.dart';
 import 'package:webview_ex/screen/contents/type_selected_contents_screen.dart';
 
@@ -28,6 +29,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
   List<Map<String, dynamic>> podcastItems = [];
   List<Map<String, dynamic>> musicItems = [];
   List<Map<String, dynamic>> newsItems = [];
+  List<dynamic> submusicItems = [];
 
   @override
   void initState() {
@@ -46,13 +48,18 @@ class _ContentsScreenState extends State<ContentsScreen> {
           .fetchItems(endpoint: 'audios', queries: {'category': 'podcast'});
       final musicData = await _apiService
           .fetchItems(endpoint: 'audios', queries: {'category': 'music'});
-      // final newsData = await _apiService.fetchItems(endpoint: 'audios',queries:{'category':'news'});
+      final newsData = await _apiService.fetchItems(endpoint: 'audios',queries:{'category':'news'});
+      final subMusicData = await _apiService
+          .fetchItems(endpoint: 'sub-category');
       setState(() {
         videoItems = _mappingService.mapItems(videoData, ContentType.video);
         podcastItems =
             _mappingService.mapItems(podcastData, ContentType.podcast);
         musicItems = _mappingService.mapItems(musicData, ContentType.music);
-        // newsItems = _mapItems(newsData, ContentType.news);
+        submusicItems = subMusicData[0].entries.map((entry) =>
+           {entry.key: entry.value}
+        ).toList();
+        newsItems = _mappingService.mapItems(newsData, ContentType.news);
         _isLoading = false;
         // PlaylistRepository 업데이트
       }); // UI 업데이트를 위해 setState 호출
@@ -94,21 +101,22 @@ class _ContentsScreenState extends State<ContentsScreen> {
                     Expanded(
                         child: _isLoading
                             ? Center(child: CircularProgressIndicator())
-                            : ListView(
+                            :
+                        ListView(
                                 children: [
                                   _buildSection('뮤직비디오', ContentType.video),
-                                  _buildSection('팟케스트', ContentType.podcast),
+                                  _buildSection('팟캐스트', ContentType.podcast),
                                   _buildSection('추천음악', ContentType.music),
-                                  // _buildSection('정치·시사·뉴스', ContentType.news)
-                                  SizedBox(
-                                    height: 20,
-                                  )
+                                  ...submusicItems.map((subList) =>
+                                     BuildSubSection(subList: subList)
+                                  ),
+                                  _buildSection('정치·시사·뉴스', ContentType.news),
+
                                 ],
                               )),
                   ]))),
     );
   }
-
   Widget _buildSection(
     String title,
     ContentType type,
@@ -150,6 +158,7 @@ class _ContentsScreenState extends State<ContentsScreen> {
               return SizedBox.shrink();
           }
         }),
+        SizedBox(height: 10,),
         if (items.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
@@ -171,6 +180,6 @@ class _ContentsScreenState extends State<ContentsScreen> {
     // Navigator.of(context).push(MaterialPageRoute(
     //     builder: (_) => TypeSelectedContentsScreen(contentType: type)));
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => TypeSelectedContentsScreen(contentType: type)));
+        builder: (_) => TypeSelectedContentsScreen(contentType: type, subtitle: '애국가요',)));
   }
 }

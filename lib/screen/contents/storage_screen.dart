@@ -34,8 +34,12 @@ class _StorageScreenState extends State<StorageScreen> {
       _isLoading = true;
     });
     try {
+      String sessionData = await getValue('session');
+      Map<String, dynamic> json = jsonDecode(sessionData);
+      int user_id = json['success']?['id'];
       final bagsData = await _apiService.fetchItems(
           endpoint: endpoint,
+          queries: {'user_id':'$user_id'}
 
       );
       bags = bagsData;
@@ -105,6 +109,7 @@ class _StorageScreenState extends State<StorageScreen> {
     String sessionData = await getValue('session');
     Map<String, dynamic> json = jsonDecode(sessionData);
     int user_id = json['success']?['id'];
+    print('user_id:$user_id');
     try {
       final playlistData = await _apiService.fetchItems(
           endpoint: 'bags',

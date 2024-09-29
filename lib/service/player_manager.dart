@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -9,10 +10,14 @@ import '../notifiers/play_button_notifier.dart';
 import '../notifiers/progress_notifier.dart';
 import '../notifiers/repeat_button_notifier.dart';
 import 'package:audio_service/audio_service.dart';
+import '../store/store_service.dart';
+import 'api_service.dart';
 import 'playlist_repository.dart';
 import 'dependency_injecter.dart';
 
 class PlayerManager {
+final _storeService = getIt<StoreService>();
+final ApiService _apiService = ApiService();
   // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
 
@@ -34,6 +39,7 @@ class PlayerManager {
   // MediaItem? _currentMediaItem; //deprecated
   // Events: Calls coming from the UI
   void init() async {
+    currentMediaItemNotifier.addListener(addUpVisit);
     await _loadPlaylist();
     _listenToChangesInPlaylist();
     _listenToChangesInSong();
@@ -45,7 +51,19 @@ class PlayerManager {
     _audioHandler.setRepeatMode(AudioServiceRepeatMode.all);
     repeatButtonNotifier.value = RepeatState.repeatPlaylist;
   }
-
+  void addUpVisit() async {
+    String? audioId = currentMediaItemNotifier.value?.id;
+    if(audioId != null) {
+      try {
+        Response res = await _apiService.postItemWithResponse(endpoint: 'audios-count/$audioId', body: {});
+        if ((res.statusCode == 200 || res.statusCode == 201) && res.data is! String) {
+          _storeService.clearCache();
+        }
+      }catch(e) {
+        throw Exception("API 요청 실패");
+      }
+    }
+  }
   Map<String, dynamic>? _lastMusicItem;
 
   void updateCurrentMediaItem(MediaItem? mediaItem) {
@@ -149,7 +167,7 @@ class PlayerManager {
     _audioHandler.queue.listen((playlist) {
       if (playlist.isEmpty) {
         playlistNotifier.value = [];
-        currentSongTitleNotifier.value = '';
+        currentSongTitleNotifier.value = '재생중이 아님';
         playlistLengthNotifier.value = 0;
       } else {
         final newList = playlist.toList();
@@ -261,15 +279,6 @@ class PlayerManager {
     });
   }
 
-  // deprecated
-  // MediaItem? getCurrentMediaItem() {
-  //   // currentSongTitleNotifier의 값이 특정 문자열이 아닐 때만 MediaItem 반환
-  //   if (currentSongTitleNotifier.value != '' && currentSongTitleNotifier.value != '재생중이 아님') {
-  //     return _currentMediaItem;
-  //   }
-  //   return null;
-  // }
-
   void _updateSkipButtons() {
     final mediaItem = _audioHandler.mediaItem.value;
     final playlist = _audioHandler.queue.value;
@@ -364,6 +373,17 @@ class PlayerManager {
     _audioHandler.removeQueueItemAt(lastIndex);
   }
 
+  void removeAt(int index) {
+    final lastIndex = _audioHandler.queue.value.length - 1;
+    if(index > lastIndex) return;
+    _audioHandler.removeQueueItemAt(index);
+    if(_audioHandler.queue.value.isEmpty) {
+      currentSongArtUriNotifier.value = '';
+      currentSongTitleNotifier.value = '재생중이 아님';
+      stop();
+    }
+  }
+
   void dispose() {
     _audioHandler.customAction('dispose');
   }
@@ -379,6 +399,7 @@ class PlayerManager {
       title: song['isLive'] ? '${song['title']} (라이브)' : (song['title'] ?? ''),
       artUri: Uri.parse(song['imageUrl'] ?? ''),
       extras: {
+        'type':song['type'] ?? '',
         'author': song['author'] ?? '',
         'url': await _getAudioUrl(song['audioUrl']),
         'subtitle': song['subtitle'] ?? '',
@@ -397,7 +418,7 @@ class PlayerManager {
   }
 
   Future<String> _getAudioUrl(String url) async {
-    print('before:$url');
+    // print('before:$url');
     if (url.contains('youtube')) {
       url = await _extractor.getAudioUrl(url);
     }

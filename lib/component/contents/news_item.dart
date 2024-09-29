@@ -1,64 +1,89 @@
 import 'package:flutter/material.dart';
 
+import '../../service/dependency_injecter.dart';
+import '../../service/player_manager.dart';
+
 class NewsItem extends StatelessWidget {
-  const NewsItem({super.key, required this.item});
+  NewsItem({super.key, required this.item});
+  final _pageManager = getIt<PlayerManager>();
   final Map<String, dynamic> item;
   final double radius = 10.0;
-  final double titleSize = 28.0;
-  final double fontSize = 16.0;
+  final double titleSize = 24.0;
+  final double fontSize = 15.0;
+  final double contentsSize = 13.0;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top:4.0),
-      child: Card(
-        color: Colors.white,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Image.asset(
-              item['imageUrl'],
-              fit: BoxFit.cover,
-              width: 84.0,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item['title'],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: titleSize,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis
-                      ),
-                    ),
-
-                    Text(
-                      '${item['channel']}·조회수${formatNumber(item['viewCount'])}·공유${formatNumber(item['shareCount'])}',
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        color: Colors.green,
-                      ),
-                    ),
-                    Text(
-                      item['subtitle'],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                      ),
-                      softWrap: true,
-                    ),
-                  ],
+    return GestureDetector(
+    onTap: () => _pageManager.addAndPlayItem(item),
+      child: Padding(
+        padding: const EdgeInsets.only(top:4.0),
+        child: Card(
+          color: Colors.white,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left:4.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.network(
+                    item['imageUrl'],
+                    fit: BoxFit.contain,
+                    width: 96.0,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'asset/images/default_thumbnail.png',
+                        width: 96.0,
+                      );
+                    },
+                  ),
                 ),
               ),
-            )
-          ],
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['title'],
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                            fontFamily: 'NotoSans',
+                            fontSize: titleSize,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            overflow: TextOverflow.ellipsis
+                        ),
+                      ),
+
+                      Text(
+                        '조회수${formatNumber(item['viewCount'])} 공유${formatNumber(item['shareCount'])}',
+                        style: TextStyle(
+                          fontFamily: 'NotoSans',
+                          fontWeight: FontWeight.w600,
+                          fontSize: fontSize,
+                          color: Colors.green,
+                        ),
+                      ),
+                      Text(
+                        item['subtitle'],
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(
+                            fontFamily: 'NotoSans',
+                            fontSize: contentsSize,
+                            height: 0.9
+                        ),
+                        softWrap: true,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
