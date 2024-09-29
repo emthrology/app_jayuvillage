@@ -295,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
 
-    setInitialBtnState();
+    // setInitialBtnState();
     if (pushedUrl == '') {
       _currentUrl = widget.homeUrl;
     } else {
@@ -394,9 +394,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           //send fcm token to server;
           _getFCMToken(session['success']['id']);
 
-          //TODO 로그인 데이터를 바탕으로 퀵버튼 수정하기
           sessionValid = session.containsKey('success') ? true : false;
-          setInitialBtnState();
+          // setInitialBtnState();
           // setQuickBtns('AFTERLOGIN');
           // Navigator.of(context).pushReplacement(
           //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
@@ -647,9 +646,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void setInitialBtnState() {
-    sessionValid ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
-  }
+  // void setInitialBtnState() {
+  //   sessionValid ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
+  // }
 
   bool isValidJson(String jsonString) {
     try {
