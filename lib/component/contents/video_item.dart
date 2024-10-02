@@ -69,7 +69,7 @@ class VideoItem extends StatelessWidget {
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          Text('광화문레코드 · 조회수 ${formatNumber(item['viewCount'])} · 공유 ${formatNumber(item['shareCount'])}', style: TextStyle(
+                          Text('광화문레코드 · 조회수 ${formatNumber(item['viewCount'])}', style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.w700
                           ),),
                         ],

@@ -59,7 +59,7 @@ class MusicItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        ' 조회수${formatNumber(item['viewCount'])} 공유${formatNumber(item['shareCount'])}',
+                        ' 조회수${formatNumber(item['viewCount'])}',
                         style: TextStyle(
                           fontFamily: 'NotoSans',
                           fontWeight: FontWeight.w600,

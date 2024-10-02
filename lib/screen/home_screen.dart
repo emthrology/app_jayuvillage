@@ -56,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
   bool _showCreatePostNav = false;
   bool _showBottomNav = true;
-  bool _showQuickBtns = true;
-  bool _hideBtnsFromWeb = false;
   final ImagePickerService _imagePickerService = ImagePickerService();
   final UrlLaunchService urlService = UrlLaunchService();
   final secureStorage = getIt<SecureStorage>();
@@ -93,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     "jayuwatch",
     "ihappynanum",
   ];
-  List<Map<String, dynamic>> btnData = BTNDATA['BEFORELOGIN']!;
   var logger = Logger(
     filter: null, // Use the default LogFilter (-> only log in debug mode)
     printer: PrettyPrinter(), // Use the PrettyPrinter to format and print log
@@ -206,31 +203,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _setComponents(String url) {
-    if (sessionValid) {
-      setQuickBtns('AFTERLOGIN');
-    } else {
-      setQuickBtns('BEFORELOGIN');
-    }
-    if (_quickBtnPages.any((e) => url.contains(e)) ||
-        url == 'https://jayuvillage.com/') {
-      url.endsWith('create') ? _showQuickBtns = false : _showQuickBtns = true;
-      if (url.endsWith('mypage')) {
-        setQuickBtns('MYPAGE');
-      }
-    } else {
-      _showQuickBtns = false;
-    }
     url.endsWith("posts/create")
         ? _showBottomNav = false
         : _showBottomNav = true;
     url.endsWith("posts/create")
         ? _showCreatePostNav = true
         : _showCreatePostNav = false;
-    if (url.endsWith("posts/create")) {
-      setState(() {
-        _showQuickBtns = false;
-      });
-    }
   }
 
   Future<void> writeValue(String key, String value) async {
@@ -294,8 +272,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }
       }
     });
-
-    // setInitialBtnState();
     if (pushedUrl == '') {
       _currentUrl = widget.homeUrl;
     } else {
@@ -368,11 +344,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _currentUrl = Uri.parse(url);
           _setComponents(url);
         },
-        onPageStarted: (url) {
-          setState(() {
-            _hideBtnsFromWeb = false;
-          });
-        },
         onPageFinished: (url) {
           if (url.startsWith('https://jayuvillage.com/auth/login')) {
             // 컨트롤러를 초기화
@@ -395,10 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _getFCMToken(session['success']['id']);
 
           sessionValid = session.containsKey('success') ? true : false;
-          // setInitialBtnState();
-          // setQuickBtns('AFTERLOGIN');
-          // Navigator.of(context).pushReplacement(
-          //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+
         } else if (session.containsKey('error')) {
           Fluttertoast.showToast(
               msg: "오류가 발생하였습니다.",
@@ -450,16 +418,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             storedValue = '';
             sessionValid = false;
           });
-          setQuickBtns('BEFORELOGIN');
         }
-      })
-      ..addJavaScriptChannel('hideBtn',
-          onMessageReceived: (JavaScriptMessage ms) {
-        setState(() {
-          ms.message.contains('hide')
-              ? _hideBtnsFromWeb = true
-              : _hideBtnsFromWeb = false;
-        });
       })
       ..addJavaScriptChannel('getImageFromFlutter',
           onMessageReceived: (JavaScriptMessage ms) {
@@ -479,7 +438,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         var path = decodedParams['path'];
         var id = decodedParams['id'];
         shareUrlPath = '$path/$id';
-        setQuickBtns('SHARE');
       })
       ..loadRequest(_currentUrl);
     if (controller.platform is AndroidWebViewController) {
@@ -517,25 +475,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             WebViewWidget(
               controller: _controller,
             ),
-            _showQuickBtns && !_hideBtnsFromWeb
-                ? Positioned(
-                    bottom: 70,
-                    right: 20,
-                    child: QuickBtns(
-                      onTap: _onBtnTapped,
-                      btnData: btnData,
-                    ))
-                // : _currentUrl.toString() == 'https://jayuvillage.com' &&
-                : _currentUrl.toString() == 'https://jayuvillage.com' &&
-                        !_hideBtnsFromWeb
-                    ? Positioned(
-                        bottom: 70,
-                        right: 20,
-                        child: QuickBtns(
-                          onTap: _onBtnTapped,
-                          btnData: btnData,
-                        ))
-                    : Container(),
           ]),
         ),
         bottomNavigationBar: _showBottomNav
@@ -639,16 +578,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void scrollToTop() {
     _controller.scrollTo(0, 0);
   }
-
-  void setQuickBtns(type) {
-    setState(() {
-      btnData = BTNDATA[type]!;
-    });
-  }
-
-  // void setInitialBtnState() {
-  //   sessionValid ? setQuickBtns('AFTERLOGIN') : setQuickBtns('BEFORELOGIN');
-  // }
 
   bool isValidJson(String jsonString) {
     try {

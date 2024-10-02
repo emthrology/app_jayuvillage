@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/component/comments_section.dart';
+import 'package:webview_ex/const/contents/content_type.dart';
+import 'package:webview_ex/service/contents/mapping_service.dart';
 
 import '../../component/contents/player/detail_section.dart';
 import '../../component/contents/player/social_buttons.dart';
@@ -29,6 +31,7 @@ final playerManager = getIt<PlayerManager>();
 
 class _AudioScreenState extends State<AudioScreen> {
   late AudioPlayer player;
+  final MappingService _mappingService = MappingService();
   final ApiService _apiService = ApiService();
   final secureStorage = getIt<SecureStorage>();
   // bool _isLoading = true;
@@ -133,7 +136,7 @@ class _AudioScreenState extends State<AudioScreen> {
                       // AddRemoveSongButtons(),
                       AudioProgressBar(),
                       AudioControlButtons(),
-                      SocialButtons(bags: bags, mediaItem: mediaItem!, contentType:mediaItem!.extras?['type'],),
+                      SocialButtons(bags: bags, mediaItem: mediaItem!, contentType:_mappingService.getEnumFromString(mediaItem!.extras?['type'], ContentType.values)!),
                       ValueListenableBuilder<MediaItem?>(
                         valueListenable: playerManager.currentMediaItemNotifier,
                         builder: (_, mediaItem, __) {
@@ -145,7 +148,7 @@ class _AudioScreenState extends State<AudioScreen> {
                       SizedBox(
                         height: 10,
                       ),
-                      CommentsSection(contentType:mediaItem!.extras?['type'], commentableId: mediaItem!.id,),
+                      CommentsSection(contentType:_mappingService.getEnumFromString(mediaItem!.extras?['type'], ContentType.values)!, commentableId: mediaItem!.id,),
                     ],
                   )),
               Padding(

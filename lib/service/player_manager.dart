@@ -5,7 +5,9 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:webview_ex/service/contents/mapping_service.dart';
 import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
+import 'package:webview_ex/const/contents/content_type.dart';
 import '../notifiers/play_button_notifier.dart';
 import '../notifiers/progress_notifier.dart';
 import '../notifiers/repeat_button_notifier.dart';
@@ -17,6 +19,7 @@ import 'dependency_injecter.dart';
 
 class PlayerManager {
 final _storeService = getIt<StoreService>();
+final MappingService _mappingService = MappingService();
 final ApiService _apiService = ApiService();
   // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
@@ -399,7 +402,7 @@ final ApiService _apiService = ApiService();
       title: song['isLive'] ? '${song['title']} (라이브)' : (song['title'] ?? ''),
       artUri: Uri.parse(song['imageUrl'] ?? ''),
       extras: {
-        'type':song['type'] ?? '',
+        'type':_mappingService.getStringFromEnum(song['type'] as ContentType),
         'author': song['author'] ?? '',
         'url': await _getAudioUrl(song['audioUrl']),
         'subtitle': song['subtitle'] ?? '',
