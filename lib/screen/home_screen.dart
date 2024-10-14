@@ -7,6 +7,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/state_manager.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/contents/player/mini_audio_player.dart';
 import 'package:webview_ex/component/quick_btns.dart';
@@ -221,10 +222,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _apiService.storeToken(token, userId);
     // print("FCM Token: $token");
   }
+  Future<void> handleKakaoScheme() async {
+    String? url = await receiveKakaoScheme();
+    if (url != null) {
+      // url에 커스텀 URL 스킴이 할당됩니다.
+      // 여기서 url을 파싱하고 필요한 작업을 수행합니다.
+      print('Received Kakao scheme: $url');
+      // 예: 특정 화면으로 이동하거나 데이터를 처리
+    }
+  }
+  void listenToKakaoScheme() {
+    print('called kakao');
+    kakaoSchemeStream.listen((url) {
+      // url에 커스텀 URL 스킴이 할당됩니다.
+      print('Received Kakao scheme: $url');
+      // 여기서 url을 파싱하고 필요한 작업을 수행합니다.
+      Uri uri = Uri.parse(url!);
+      // 쿼리 파라미터 추출
+      Map<String, String> params = uri.queryParameters;
 
+      // 파라미터 사용
+      String? value1 = params['key1'];
+      String? value2 = params['key2'];
+
+      print('Received parameters:');
+      print('key1: $value1');
+      print('key2: $value2');
+
+    }, onError: (error) {
+      print('Error receiving Kakao scheme: $error');
+    });
+  }
   @override
   void initState() {
     super.initState();
+    // handleKakaoScheme(); // 앱이 시작될 때 한 번 호출
+    // listenToKakaoScheme(); // 스트림 리스너 설정
     _loadData();
     _firebaseSubscribe();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:webview_ex/component/contents/player/player_playlist_modal.dart';
 import 'package:webview_ex/component/contents/storage/list_playlist_modal.dart';
 import 'package:webview_ex/const/contents/content_type.dart';
@@ -120,15 +122,15 @@ class _SocialButtonsState extends State<SocialButtons> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildIconText(Icons.remove_red_eye_outlined, '조회$viewCount', () {}),
+          _buildIconText(Icons.remove_red_eye_outlined, '$viewCount', () {}),
           _buildIconText(
               isLiked ? Icons.favorite : Icons.favorite_border,
-              '좋아요$likeCount',
+              '$likeCount',
               _toggleLike
           ),
-          // _buildIconText(Icons.share, '공유', () {
-          //   print('공유 클릭됨');
-          // }),
+          _buildIconText(Icons.share, '공유', () {
+            share();
+          }),
           if(widget.bags.isNotEmpty)
             _buildIconText(Icons.library_music_rounded, '보관함', () {
               addToPlaylist(context, widget.bags);
@@ -183,5 +185,16 @@ class _SocialButtonsState extends State<SocialButtons> {
       builder: (context) =>
           ListPlaylistModal(playlists: bags, audio_id: mediaItem.id),
     );
+  }
+
+  void share() {
+    final String id = widget.mediaItem.id;
+    String appLink = "https://jayuvillage.com/audio/$id";
+    String iosLink = "https://jayuvillage.com/audio/$id";
+    if(Platform.isAndroid) {
+      Share.share(appLink);
+    }else if(Platform.isIOS) {
+      Share.share(iosLink);
+    }
   }
 }

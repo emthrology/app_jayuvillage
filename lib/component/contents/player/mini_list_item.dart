@@ -27,7 +27,7 @@ class MiniListItem extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                if (mediaItem.artUri == null)
+                if (mediaItem.artUri.toString().isEmpty)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10.0),
                     child: Image.asset(

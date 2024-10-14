@@ -202,7 +202,10 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
   }
 
   void _onBackTapped() {
-    if (_navigationStack.length > 1) {
+    if(_currentIndex == 1) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
+    } else if (_navigationStack.length > 1) {
       _navigationStack.removeLast();
       setState(() {
         _currentIndex = _navigationStack.last;

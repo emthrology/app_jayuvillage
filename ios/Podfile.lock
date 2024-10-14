@@ -1,6 +1,6 @@
 PODS:
   - Alamofire (5.9.1)
-  - app_links (0.0.1):
+  - app_links (0.0.2):
     - Flutter
   - audio_service (0.0.1):
     - Flutter
@@ -230,7 +230,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
-  app_links: e70ca16b4b0f88253b3b3660200d4a10b4ea9795
+  app_links: e7a6750a915a9e161c58d91bc610e8cd1d4d0ad0
   audio_service: f509d65da41b9521a61f1c404dd58651f265a567
   audio_session: 088d2483ebd1dc43f51d253d4a1c517d9a2e7207
   Firebase: 26b040b20866a55f55eb3611b9fcf3ae64816b86
