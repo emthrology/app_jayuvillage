@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _getFCMToken(session['success']['id']);
 
           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl)));
+              MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl, pageId: '0',)));
         }else if(session.containsKey('error')) {
           Fluttertoast.showToast(
               msg: "오류가 발생하였습니다.",
@@ -334,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) =>
-            HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
+            HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId: '0',)));
   }
 
   void _onCheckboxTapped(newVal) {
@@ -346,12 +346,12 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onRegisterTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => HomeScreen(
-            homeUrl: Uri.parse('https://jayuvillage.com/auth/register'))));
+            homeUrl: Uri.parse('https://jayuvillage.com/auth/register'), pageId: '0',)));
   }
   void _onPasswordChangeTapped() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => HomeScreen(
-            homeUrl: Uri.parse('https://jayuvillage.com/auth/password'))));
+            homeUrl: Uri.parse('https://jayuvillage.com/auth/password'), pageId: '0',)));
   }
 
   void callApi() async {

@@ -39,7 +39,9 @@ import 'contents/contents_index_screen.dart';
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
 
-  HomeScreen({super.key, required this.homeUrl});
+  final String pageId;
+
+  HomeScreen({super.key, required this.homeUrl, required this.pageId});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -481,20 +483,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _controller = controller;
   }
 
-  // @override
-  // void didUpdateWidget(covariant HomeScreen oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   if (widget.homeUrl != oldWidget.homeUrl) {
-  //     setState(() {
-  //       _currentUrl = widget.homeUrl;
-  //     });
-  //   }
-  //   if (_quickBtnPages.any((e) => _currentUrl.toString().contains(e))) {
-  //     _showQuickBtns = true;
-  //   } else {
-  //     _showQuickBtns = false;
-  //   }
-  // }
+  @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.pageId != oldWidget.pageId) {
+      setState(() {
+        _currentUrl = widget.homeUrl;
+        _controller.loadRequest(_currentUrl);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

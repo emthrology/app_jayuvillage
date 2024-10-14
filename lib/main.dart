@@ -109,33 +109,26 @@ void main() async {
 
         builder: (context, state){
           print('routed here');
-          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'));
+          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId:'0');
         }
       ),
       GoRoute(
         path:'/posts/:id',
         builder: (context, state) {
-          print('$state.');
           final id = state.pathParameters['id'];
-          print('id:$id');
-          return HomeScreen(homeUrl: state.uri);
-        }
+          return HomeScreen(homeUrl: state.uri, pageId:'$id');
+        },
       ),
       GoRoute(
         path:'/notices/:id',
         builder:(context, state) {
           final id = state.pathParameters['id'];
-          print(id);
-          return HomeScreen(homeUrl: state.uri);
+          return HomeScreen(homeUrl: state.uri, pageId:'$id');
         }
       ),
       GoRoute(
         path:'/audio/:id',
         builder:(context, state) {
-          debugPrint('audio:id = ${state.uri.toString()}');
-          final id = state.uri.toString().split('/').last;
-          debugPrint(id);
-          debugPrint('${state.pathParameters['id']}');
           return ShareScreen(itemId:state.pathParameters['id']!);
         }
       )

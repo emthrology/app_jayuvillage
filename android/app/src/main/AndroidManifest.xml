@@ -56,8 +56,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="jayuvillage.com"/>
-<!--                <data android:host="jayuvillage.com"/>-->
+                <data android:scheme="http" android:host="jayuvillage.com"/>
+                <data android:scheme="https" />
             </intent-filter>
             <!-- 카카오톡 딥링크를 위한 인텐트 필터 -->
             <intent-filter>

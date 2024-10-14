@@ -21,7 +21,7 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
   int _currentIndex = 1;
   final List<int> _navigationStack = [1];
   final List<Widget> _pages = [
-    HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com')),
+    HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId: '0',),
     ContentsScreen(),
     StorageScreen(),
     SearchScreen(),
@@ -204,7 +204,7 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
   void _onBackTapped() {
     if(_currentIndex == 1) {
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))));
+          MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId: '0',)));
     } else if (_navigationStack.length > 1) {
       _navigationStack.removeLast();
       setState(() {

@@ -122,6 +122,14 @@ class _ShareScreenState extends State<ShareScreen>
     _animationController.dispose();
     super.dispose();
   }
+  @override
+  void didUpdateWidget(ShareScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.itemId != oldWidget.itemId) {
+      // 새로운 itemId로 데이터를 다시 로드하거나 상태를 업데이트
+      _loadSharedItem();
+    }
+  }
 
   @override
   void initState() {
