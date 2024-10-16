@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/component/comments_section.dart';
 import 'package:webview_ex/const/contents/content_type.dart';
@@ -181,7 +182,8 @@ class _AudioScreenState extends State<AudioScreen> {
     // Navigator.of(context).push(MaterialPageRoute(
     //     builder: (_) => ContentsIndexScreen()
     // ));
-    Navigator.of(context).pop(); //
+    context.pop();
+    // Navigator.of(context).pop(); //
   }
 }
 

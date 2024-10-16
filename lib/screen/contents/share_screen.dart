@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:webview_ex/const/contents/content_type.dart';
 import 'package:webview_ex/screen/contents/contents_index_screen.dart';
 
@@ -10,6 +11,7 @@ import '../../service/api_service.dart';
 import '../../service/contents/mapping_service.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
+import 'audio_screen.dart';
 
 class ShareScreen extends StatefulWidget {
   final String itemId;
@@ -22,7 +24,7 @@ class ShareScreen extends StatefulWidget {
 
 class _ShareScreenState extends State<ShareScreen>
     with TickerProviderStateMixin {
-  final _pageManager = getIt<PlayerManager>();
+  final playerManager = getIt<PlayerManager>();
   final ApiService _apiService = ApiService();
   final MappingService mappingService = MappingService();
   late AnimationController _animationController;
@@ -161,7 +163,7 @@ class _ShareScreenState extends State<ShareScreen>
               ? Center(child: CircularProgressIndicator())
               : Center(
                   child: GestureDetector(
-                    onTap: () => _pageManager.addAndPlayItem(item),
+                    onTap: () => handlePlay(context),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxHeight: 120),
                       child: Card(
@@ -225,43 +227,43 @@ class _ShareScreenState extends State<ShareScreen>
                   ),
                 ),
 
-          Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: GestureDetector(
-                onHorizontalDragUpdate: _updatePlayerVisibility,
-                onHorizontalDragEnd: _finishDrag,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return AnimatedBuilder(
-                      animation: _slideAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: _slideAnimation.value * constraints.maxWidth,
-                          child: child,
-                        );
-                      },
-                      child: Container(
-                        height: 60,
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2))
-                            ]),
-                        child: MiniAudioPlayer(),
-                      ),
-                    );
-                  },
-                ),
-              )),
+          // Positioned(
+          //     bottom: 0,
+          //     left: 0,
+          //     right: 0,
+          //     child: GestureDetector(
+          //       onHorizontalDragUpdate: _updatePlayerVisibility,
+          //       onHorizontalDragEnd: _finishDrag,
+          //       child: LayoutBuilder(
+          //         builder: (context, constraints) {
+          //           return AnimatedBuilder(
+          //             animation: _slideAnimation,
+          //             builder: (context, child) {
+          //               return Transform.translate(
+          //                 offset: _slideAnimation.value * constraints.maxWidth,
+          //                 child: child,
+          //               );
+          //             },
+          //             child: Container(
+          //               height: 60,
+          //               margin:
+          //                   EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //               padding: EdgeInsets.all(8),
+          //               decoration: BoxDecoration(
+          //                   color: Colors.white,
+          //                   borderRadius: BorderRadius.circular(8),
+          //                   boxShadow: [
+          //                     BoxShadow(
+          //                         color: Colors.black.withOpacity(0.1),
+          //                         blurRadius: 4,
+          //                         offset: Offset(0, 2))
+          //                   ]),
+          //               child: MiniAudioPlayer(),
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //     )),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -289,8 +291,49 @@ class _ShareScreenState extends State<ShareScreen>
   }
 
   void _onBackTapped() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => ContentsIndexScreen()));
+    context.go('/contents');
+    // Navigator.of(context)
+    //     .push(MaterialPageRoute(builder: (_) => ContentsIndexScreen()));
+  }
+
+  void handlePlay(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try{
+      await playerManager.addAndPlayItem(item);
+      await navigateToAudioScreen(context);
+    }catch(e) {
+      Fluttertoast.showToast(
+        msg: "공유항목 재생 중 오류 발생",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Color(0xffff0000),
+        textColor: Colors.white,
+        fontSize: 24.0,
+      );
+    }finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+
+  }
+  Future<void> navigateToAudioScreen(BuildContext context) async {
+    if (playerManager.currentMediaItemNotifier.value != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => AudioScreen()),
+      );
+    } else {
+      // 미디어 아이템이 없을 때 사용자에게 알림
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('미디어 정보를 불러올 수 업습니다.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   String _getContentTypeLabel(Map<String, dynamic> item) {

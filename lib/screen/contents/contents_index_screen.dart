@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:webview_ex/screen/contents/contents_screen.dart';
 import 'package:webview_ex/screen/contents/search_screen.dart';
 import 'package:webview_ex/screen/contents/storage_screen.dart';
@@ -8,7 +9,8 @@ import '../../const/contents_tabs.dart';
 import '../home_screen.dart';
 
 class ContentsIndexScreen extends StatefulWidget {
-  const ContentsIndexScreen({super.key});
+  final String pageIndex;
+  const ContentsIndexScreen({super.key, required this.pageIndex});
 
   @override
   State<ContentsIndexScreen> createState() => _ContentsIndexScreenState();
@@ -92,6 +94,7 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
   @override
   void initState() {
     super.initState();
+    _currentIndex = int.parse(widget.pageIndex!);
     tabController = TabController(length: CONTENTSTABS.length, vsync: this);
     tabController.addListener(() {
       setState(() {});
@@ -203,8 +206,9 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
 
   void _onBackTapped() {
     if(_currentIndex == 1) {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId: '0',)));
+      context.go('/');
+      // Navigator.of(context).pushReplacement(
+      //     MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId: '0',)));
     } else if (_navigationStack.length > 1) {
       _navigationStack.removeLast();
       setState(() {
@@ -217,8 +221,9 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
 
   void _onNavTapped(int index) {
     if (index == 0) {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => _pages[index]));
+      context.go('/');
+      // Navigator.of(context)
+      //     .push(MaterialPageRoute(builder: (_) => _pages[index]));
     }
     if (index != _currentIndex) {
       setState(() {

@@ -189,12 +189,13 @@ class _SocialButtonsState extends State<SocialButtons> {
 
   void share() {
     final String id = widget.mediaItem.id;
-    String appLink = "https://jayuvillage.com/audio/$id";
-    String iosLink = "https://jayuvillage.com/audio/$id";
-    if(Platform.isAndroid) {
-      Share.share(appLink);
-    }else if(Platform.isIOS) {
-      Share.share(iosLink);
-    }
+    String linkDomain = 'http://ec2-43-201-147-125.ap-northeast-2.compute.amazonaws.com';
+    String shareLink = "$linkDomain/bridge?appOnly=true&endpoint=audio&id=$id";
+    Share.share(shareLink);
+    // if(Platform.isAndroid) {
+    //   Share.share(appLink);
+    // }else if(Platform.isIOS) {
+    //   Share.share(iosLink);
+    // }
   }
 }

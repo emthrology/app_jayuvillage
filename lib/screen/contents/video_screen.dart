@@ -168,7 +168,7 @@ class _VideoScreenState extends State<VideoScreen> {
   }
   void _onTapped() {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => ContentsIndexScreen()
+        builder: (_) => ContentsIndexScreen(pageIndex: '1',)
     ));
     // Navigator.of(context).pop(); //
   }

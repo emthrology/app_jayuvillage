@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_ex/screen/contents/contents_index_screen.dart';
 import 'package:webview_ex/screen/contents/share_screen.dart';
 import 'package:webview_ex/screen/error_screen.dart';
 
@@ -103,13 +104,25 @@ void main() async {
   }
   final goRouter = GoRouter(
     navigatorKey: _navigatorKey,
+    initialLocation: '/',
     routes: [
       GoRoute(
         path:'/',
-
         builder: (context, state){
           print('routed here');
           return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId:'0');
+        }
+      ),
+      GoRoute(
+        path:'/contents',
+        builder:(context, state) {
+          return ContentsIndexScreen(pageIndex:'1');
+        }
+      ),
+      GoRoute(
+        path:'/contents/:index',
+        builder:(context,state) {
+          return ContentsIndexScreen(pageIndex:state.pathParameters['index']!);
         }
       ),
       GoRoute(
@@ -138,7 +151,9 @@ void main() async {
     },
     redirect: (BuildContext context, GoRouterState state) {
       // 딥링크 처리 로직
+      debugPrint('redirect-state:$state');
       final deepLink = state.uri.toString();
+      debugPrint('deepLink:$deepLink');
       if (deepLink.isNotEmpty) {
         // 딥링크에 따른 리다이렉션 로직
         return deepLink;

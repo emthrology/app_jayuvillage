@@ -7,6 +7,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/state_manager.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_ex/component/contents/player/mini_audio_player.dart';
@@ -581,8 +582,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     String sessionData = await getSessionValue('session');
     if (index == 1) {
       sessionData != 'No such data'
-          ? Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => ContentsIndexScreen()))
+          ? context.go('/contents')
+          // ? Navigator.of(context)
+          // .push(MaterialPageRoute(builder: (_) => ContentsIndexScreen()))
           : Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => LoginScreen(webController: _controller)));
     } else {
