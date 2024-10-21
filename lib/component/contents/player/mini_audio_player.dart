@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/service/player_manager.dart';
 import '../../../screen/contents/audio_screen.dart';
@@ -23,9 +24,10 @@ class _MiniAudioPlayerState extends State<MiniAudioPlayer> {
 
   void navigateToAudioScreen(BuildContext context) {
     if (playerManager.currentMediaItemNotifier.value != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => AudioScreen()),
-      );
+      context.go('/audio/player');
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(builder: (context) => AudioScreen()),
+      // );
     } else {
       // 미디어 아이템이 없을 때 사용자에게 알림
       ScaffoldMessenger.of(context).showSnackBar(

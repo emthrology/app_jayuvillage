@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:webview_ex/screen/home_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -107,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
           });
           //send fcm token to server;
           _getFCMToken(session['success']['id']);
-
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => HomeScreen(homeUrl: homeUrl, pageId: '0',)));
         }else if(session.containsKey('error')) {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_ex/screen/contents/audio_screen.dart';
 import 'package:webview_ex/screen/contents/contents_index_screen.dart';
 import 'package:webview_ex/screen/contents/share_screen.dart';
 import 'package:webview_ex/screen/error_screen.dart';
@@ -109,8 +110,15 @@ void main() async {
       GoRoute(
         path:'/',
         builder: (context, state){
-          print('routed here');
+          debugPrint('routed here');
           return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId:'0');
+        }
+      ),
+      GoRoute(
+        path:'/chat/:id',
+        builder: (context,state) {
+          debugPrint(state.uri.toString());
+          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com/chat/live?groupId=${state.pathParameters['id']!}'), pageId: '0');
         }
       ),
       GoRoute(
@@ -137,6 +145,12 @@ void main() async {
         builder:(context, state) {
           final id = state.pathParameters['id'];
           return HomeScreen(homeUrl: state.uri, pageId:'$id');
+        }
+      ),
+      GoRoute(
+        path:'/audio/player',
+        builder:(context,state) {
+          return AudioScreen();
         }
       ),
       GoRoute(

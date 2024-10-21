@@ -188,10 +188,20 @@ class _SocialButtonsState extends State<SocialButtons> {
   }
 
   void share() {
+    final box = context.findRenderObject() as RenderBox?;
     final String id = widget.mediaItem.id;
-    String linkDomain = 'http://ec2-43-201-147-125.ap-northeast-2.compute.amazonaws.com';
+    Map<String, dynamic> session = jsonDecode(sessionData)['success'];
+    String linkDomain = 'https://link.jayuvillage.com';
     String shareLink = "$linkDomain/bridge?appOnly=true&endpoint=audio&id=$id";
-    Share.share(shareLink);
+    Share.share(
+'''
+$shareLink
+${session['nickname']}님이
+${widget.mediaItem.title}
+공유하셨습니다.
+''',
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+    );
     // if(Platform.isAndroid) {
     //   Share.share(appLink);
     // }else if(Platform.isIOS) {
