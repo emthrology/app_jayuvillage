@@ -74,7 +74,7 @@ class ApiService {
       }catch (e) {
         print(e);
         Fluttertoast.showToast(
-            msg: "불러오기 중 오류 발생",
+            msg: "$endpoint 불러오기 중 오류 발생",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.TOP,
             timeInSecForIosWeb: 2,
@@ -82,7 +82,7 @@ class ApiService {
             textColor: Colors.white,
             fontSize: 16.0
         );
-        throw Exception('$endpoint 불러오기 중 오류 발생: $e');
+        throw Exception('$baseUrl/$endpoint?$queryString: $endpoint 불러오기 중 오류 발생: $e');
       }
     }
 

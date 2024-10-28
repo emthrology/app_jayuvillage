@@ -418,17 +418,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       })
       ..addJavaScriptChannel('thruFlutter',
           onMessageReceived: (JavaScriptMessage ms) {
-        String value = ms.message;
-        Fluttertoast.showToast(
-          msg: 'isFlutter:$value',
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Color(0xff8bf05d),
-          textColor: Colors.black,
-          fontSize: 24.0,
-
-        );
+        // String value = ms.message;
+        // Fluttertoast.showToast(
+        //   msg: 'isFlutter:$value',
+        //   toastLength: Toast.LENGTH_LONG,
+        //   gravity: ToastGravity.TOP,
+        //   timeInSecForIosWeb: 5,
+        //   backgroundColor: Color(0xff8bf05d),
+        //   textColor: Colors.black,
+        //   fontSize: 24.0,
+        //
+        // );
       })
       ..addJavaScriptChannel('alertChannel',
           onMessageReceived: (JavaScriptMessage ms) {

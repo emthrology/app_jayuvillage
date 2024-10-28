@@ -182,7 +182,7 @@ class _AudioScreenState extends State<AudioScreen> {
     // Navigator.of(context).push(MaterialPageRoute(
     //     builder: (_) => ContentsIndexScreen()
     // ));
-    context.pop();
+    context.go('/contents');
     // Navigator.of(context).pop(); //
   }
 }
