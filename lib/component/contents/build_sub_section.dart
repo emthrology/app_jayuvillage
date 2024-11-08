@@ -32,7 +32,7 @@ class BuildSubSection extends StatelessWidget {
                   onTap: () {
                     onTapMore(context, ContentType.music, title);
                   },
-                  title: '${title} 더보기',
+                  title: '$title 더보기',
                 )),
           ),
         SizedBox(height: 32), //

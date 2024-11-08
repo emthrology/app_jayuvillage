@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:webview_ex/component/comments_section.dart';
@@ -12,7 +11,6 @@ import 'package:webview_ex/service/contents/mapping_service.dart';
 
 import '../../component/contents/player/detail_section.dart';
 import '../../component/contents/player/social_buttons.dart';
-import '../../component/contents/storage/list_playlist_modal.dart';
 import '../../service/api_service.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
@@ -50,10 +48,10 @@ class _AudioScreenState extends State<AudioScreen> {
     try {
       String sessionData = await getValue('session');
       Map<String, dynamic> json = jsonDecode(sessionData);
-      int user_id = json['success']?['id'];
+      int userId = json['success']?['id'];
       final bagsData = await _apiService.fetchItems(
         endpoint: 'bagitems',
-        queries: {'user_id':'$user_id'}
+        queries: {'user_id':'$userId'}
       );
       setState(() {
         bags = bagsData;

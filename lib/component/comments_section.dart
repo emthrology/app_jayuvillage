@@ -50,7 +50,7 @@ class _CommentsSectionState extends State<CommentsSection> {
           'diff_at' : item['diff_at'],
           'content': item['content'] as String
         }).toList();
-        String queryString =  queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');;
+        String queryString =  queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
         String cacheKey = '$endpoint?$queryString';
         _storeService.removeCache(cacheKey);
       });

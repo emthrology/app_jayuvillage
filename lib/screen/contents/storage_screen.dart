@@ -10,7 +10,6 @@ import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
 import '../../store/secure_storage.dart';
 import '../../service/contents/mapping_service.dart';
-import '../../../const/contents/content_type.dart';
 
 class StorageScreen extends StatefulWidget {
   const StorageScreen({super.key});
@@ -36,10 +35,10 @@ class _StorageScreenState extends State<StorageScreen> {
     try {
       String sessionData = await getValue('session');
       Map<String, dynamic> json = jsonDecode(sessionData);
-      int user_id = json['success']?['id'];
+      int userId = json['success']?['id'];
       final bagsData = await _apiService.fetchItems(
           endpoint: endpoint,
-          queries: {'user_id':'$user_id'}
+          queries: {'user_id':'$userId'}
 
       );
       bags = bagsData;
@@ -108,12 +107,12 @@ class _StorageScreenState extends State<StorageScreen> {
     });
     String sessionData = await getValue('session');
     Map<String, dynamic> json = jsonDecode(sessionData);
-    int user_id = json['success']?['id'];
-    print('user_id:$user_id');
+    int userId = json['success']?['id'];
+    print('user_id:$userId');
     try {
       final playlistData = await _apiService.fetchItems(
           endpoint: 'bags',
-          queries: {'bag_item_id':'$bagId','user_id':'$user_id'}
+          queries: {'bag_item_id':bagId,'user_id':'$userId'}
       );
       print('playlistData:$playlistData');
       List<dynamic> playlistItems = _mappingService.mapItemsFromStoreList(playlistData);

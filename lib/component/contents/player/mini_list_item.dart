@@ -1,7 +1,5 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import '../../../const/contents/content_type.dart';
-import '../../shaped_icon_button.dart';
 
 class MiniListItem extends StatelessWidget {
   const MiniListItem(
@@ -18,7 +16,7 @@ class MiniListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 4.0),
-      child: Container(
+      child: SizedBox(
         height: 75,
         child: Card(
           color: Colors.white,

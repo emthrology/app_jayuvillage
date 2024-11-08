@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 class WhiteButton extends StatelessWidget {
@@ -21,7 +20,7 @@ class WhiteButton extends StatelessWidget {
 
       ),
       child: Text(
-        '$title',
+        title,
         style: TextStyle(
             color: Colors.black,
             fontFamily: 'NotoSans',

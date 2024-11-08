@@ -1,12 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:webview_ex/component/contents/build_sub_section.dart';
-import 'package:webview_ex/component/shaped_icon_button.dart';
 import 'package:webview_ex/component/white_button.dart';
-import 'package:webview_ex/screen/contents/share_screen.dart';
 import 'package:webview_ex/screen/contents/type_selected_contents_screen.dart';
 
 import '../../component/contents/music_item.dart';

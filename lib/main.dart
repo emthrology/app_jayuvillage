@@ -3,15 +3,12 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_ex/screen/contents/audio_screen.dart';
-import 'package:webview_ex/screen/contents/contents_index_screen.dart';
-import 'package:webview_ex/screen/contents/share_screen.dart';
-import 'package:webview_ex/screen/error_screen.dart';
+import 'package:webview_ex/service/app_router.dart';
+import 'package:webview_ex/service/ios_deeplink_service.dart';
 
 import 'service/dependency_injecter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:webview_ex/screen/home_screen.dart';
 import 'firebase_options.dart';
 
 import 'package:go_router/go_router.dart';
@@ -90,9 +87,11 @@ Future<void> initDeepLinks() async {
 late PlayerManager pageManager;
 final _navigatorKey = GlobalKey<NavigatorState>();
 late AppLinks _appLinks;
+
 StreamSubscription<Uri>? _linkSubscription;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  IosDeeplinkService.initialize();
   await setupServiceLocator();
   getIt<PlayerManager>().init();
 
@@ -103,79 +102,6 @@ void main() async {
   if(true) {
     permission();
   }
-  final goRouter = GoRouter(
-    navigatorKey: _navigatorKey,
-    initialLocation: '/',
-    routes: [
-      GoRoute(
-        path:'/',
-        builder: (context, state){
-          debugPrint('routed here');
-          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'), pageId:'0');
-        }
-      ),
-      GoRoute(
-        path:'/chat/:id',
-        builder: (context,state) {
-          debugPrint(state.uri.toString());
-          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com/chat/live?groupId=${state.pathParameters['id']!}'), pageId: '0');
-        }
-      ),
-      GoRoute(
-        path:'/contents',
-        builder:(context, state) {
-          return ContentsIndexScreen(pageIndex:'1');
-        }
-      ),
-      GoRoute(
-        path:'/contents/:index',
-        builder:(context,state) {
-          return ContentsIndexScreen(pageIndex:state.pathParameters['index']!);
-        }
-      ),
-      GoRoute(
-        path:'/posts/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'];
-          return HomeScreen(homeUrl: state.uri, pageId:'$id');
-        },
-      ),
-      GoRoute(
-        path:'/notices/:id',
-        builder:(context, state) {
-          final id = state.pathParameters['id'];
-          return HomeScreen(homeUrl: state.uri, pageId:'$id');
-        }
-      ),
-      GoRoute(
-        path:'/audio/player',
-        builder:(context,state) {
-          return AudioScreen();
-        }
-      ),
-      GoRoute(
-        path:'/audio/:id',
-        builder:(context, state) {
-          return ShareScreen(itemId:state.pathParameters['id']!);
-        }
-      )
-    ],
-    errorBuilder: (context, state) {
-      return ErrorScreen(error: state.error.toString());
-    },
-    redirect: (BuildContext context, GoRouterState state) {
-      // 딥링크 처리 로직
-      debugPrint('redirect-state:$state');
-      final deepLink = state.uri.toString();
-      debugPrint('deepLink:$deepLink');
-      if (deepLink.isNotEmpty) {
-        // 딥링크에 따른 리다이렉션 로직
-        return deepLink;
-      }
-      return null; // 리다이렉션이 필요 없는 경우
-    },
-    debugLogDiagnostics: true,
-  );
   // 앱이 실행 중일 때 들어오는 링크 처리
   initDeepLinks();
   KakaoSdk.init(
@@ -187,8 +113,38 @@ void main() async {
     //     debugShowCheckedModeBanner: false, // 디버깅 모드 배너 끄기
     //     home: HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com'))
     // ),
-    MaterialApp.router(
-      routerConfig: goRouter,
-    )
+    App()
   );
+}
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.noScaling;
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: MaterialApp.router(
+        routerConfig: goRouter,
+        theme: ThemeData(
+            fontFamily: 'NotoSans'
+        ),
+        // builder: (context, child) {
+        //   return MediaQuery(
+        //     data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+        //     child: child!,
+        //   );
+        // },
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.noScaling,
+            ),
+            child: child!,
+          );
+        },
+      ),
+    );
+  }
 }

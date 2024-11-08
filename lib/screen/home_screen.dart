@@ -6,13 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/state_manager.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_ex/component/contents/player/mini_audio_player.dart';
-import 'package:webview_ex/component/quick_btns.dart';
-import 'package:webview_ex/const/quick_btns_data.dart';
 import 'package:webview_ex/screen/login_screen.dart';
 import 'package:webview_ex/screen/contents/audio_screen.dart';
 import 'package:webview_ex/service/image_picker_service.dart';
@@ -35,14 +31,14 @@ import 'package:flutter/scheduler.dart';
 import '../service/api_service.dart';
 import '../service/dependency_injecter.dart';
 import '../store/store_service.dart';
-import 'contents/contents_index_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   Uri homeUrl;
 
   final String pageId;
+  final int navIndex;
 
-  HomeScreen({super.key, required this.homeUrl, required this.pageId});
+  HomeScreen({super.key, required this.homeUrl, required this.pageId, this.navIndex = 0});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -57,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final WebViewController _controller;
   late Uri _currentUrl;
   String pushedUrl = '';
-  int _currentIndex = 0;
+  late int _currentIndex;
   bool _showCreatePostNav = false;
   bool _showBottomNav = true;
   final ImagePickerService _imagePickerService = ImagePickerService();
@@ -158,21 +154,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final scaffoldMessenger = ScaffoldMessenger.of(context!);
     ShareResult shareResult;
-    if (context != null) {
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
-        shareResult = await Share.shareUri(
-          Uri.parse(uri),
-          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-        ).catchError((error) {
-          return error;
-        });
-        bool result = shareResult.status == ShareResultStatus.success;
-        if (result) {
-          scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
-        }
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      shareResult = await Share.shareUri(
+        Uri.parse(uri),
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+      ).catchError((error) {
+        return error;
       });
+      bool result = shareResult.status == ShareResultStatus.success;
+      if (result) {
+        scaffoldMessenger.showSnackBar(getResultSnackBar(shareResult));
+      }
+    });
     }
-  }
 
   SnackBar getResultSnackBar(ShareResult result) {
     return SnackBar(
@@ -259,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.navIndex;
     // handleKakaoScheme(); // 앱이 시작될 때 한 번 호출
     // listenToKakaoScheme(); // 스트림 리스너 설정
     _loadData();
@@ -343,6 +338,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             return NavigationDecision.prevent;
           }
           if (request.url.startsWith('tel:')) {
+            debugPrint('TelRequest: ${request.url}');
             if (Platform.isAndroid) {
               _launchURL(request.url);
             } else if (Platform.isIOS) {
@@ -352,8 +348,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             return NavigationDecision.prevent;
           }
           if (isAppLink(request.url)) {
-            String p_url = request.url.replaceAll('intent:', '');
-            _launchURL(p_url);
+            String pUrl = request.url.replaceAll('intent:', '');
+            _launchURL(pUrl);
             // handleAppLink(url);
             return NavigationDecision.prevent;
           }
@@ -474,6 +470,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         var path = decodedParams['path'];
         var id = decodedParams['id'];
         shareUrlPath = '$path/$id';
+      })
+      ..addJavaScriptChannel('routeManagerScreenChannel',
+          onMessageReceived: (JavaScriptMessage ms) {
+        context.go('/organization/manager');
       })
       ..loadRequest(_currentUrl);
     if (controller.platform is AndroidWebViewController) {

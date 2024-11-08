@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_ex/const/contents/content_type.dart';
-import 'package:webview_ex/screen/contents/contents_index_screen.dart';
 
-import '../../component/contents/player/mini_audio_player.dart';
-import '../../component/contents/storage/list_item.dart';
 import '../../service/api_service.dart';
 import '../../service/contents/mapping_service.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
-import 'audio_screen.dart';
 
 class ShareScreen extends StatefulWidget {
   final String itemId;

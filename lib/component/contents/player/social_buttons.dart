@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:audio_service/audio_service.dart';
@@ -22,7 +21,7 @@ class SocialButtons extends StatefulWidget {
 
   final ContentType contentType;
 
-  SocialButtons({Key? key, required this.bags, required this.mediaItem, required this.contentType}) : super(key: key);
+  SocialButtons({super.key, required this.bags, required this.mediaItem, required this.contentType});
 
   @override
   _SocialButtonsState createState() => _SocialButtonsState();

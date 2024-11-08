@@ -30,7 +30,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _showCancelButton = false;
   int _categoryIndex = 1;
   final playerManager = getIt<PlayerManager>();
-  List<bool> _selections = [true, false];
+  final List<bool> _selections = [true, false];
   List<dynamic> searchResults = [];
   List<String> recentSearches = ['광화문애가', '첫번째', '두번째'];
 

@@ -94,7 +94,7 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
   @override
   void initState() {
     super.initState();
-    _currentIndex = int.parse(widget.pageIndex!);
+    _currentIndex = int.parse(widget.pageIndex);
     tabController = TabController(length: CONTENTSTABS.length, vsync: this);
     tabController.addListener(() {
       setState(() {});
@@ -181,25 +181,21 @@ class _ContentsIndexScreenState extends State<ContentsIndexScreen>
           ),
         ],
       )),
-      bottomNavigationBar: Stack(
-        children: [
-          BottomNavigationBar(
-            backgroundColor: Colors.white,
-            selectedItemColor: Color(0xff0baf00),
-            unselectedItemColor: Colors.black,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            currentIndex: _currentIndex,
-            type: BottomNavigationBarType.fixed,
-            onTap: _onNavTapped,
-            items: CONTENTSTABS
-                .map(
-                  (e) => BottomNavigationBarItem(
-                      icon: Icon(e.icon), label: e.label),
-                )
-                .toList(),
-          ),
-        ],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        selectedItemColor: Color(0xff0baf00),
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        onTap: _onNavTapped,
+        items: CONTENTSTABS
+            .map(
+              (e) => BottomNavigationBarItem(
+                  icon: Icon(e.icon), label: e.label),
+            )
+            .toList(),
       ),
     );
   }

@@ -24,11 +24,34 @@ import KakaoSDKAuth
     completionHandler(.newData)
   }
 
-  // 카카오톡 URL 처리를 위한 메서드 추가
+//   // 카카오톡 URL 처리를 위한 메서드 추가
+//   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+//     if (AuthApi.isKakaoTalkLoginUrl(url)) {
+//       return AuthController.handleOpenUrl(url: url)
+//     }
+//     return false
+//   }
+
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    if (AuthApi.isKakaoTalkLoginUrl(url)) {
-      return AuthController.handleOpenUrl(url: url)
-    }
-    return false
+      return handleDeepLink(url: url)
+  }
+
+  override func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+      if let incomingURL = userActivity.webpageURL {
+          return handleDeepLink(url: incomingURL)
+      }
+      return false
+  }
+
+  private func handleDeepLink(url: URL) -> Bool {
+      print("Received deep link: \(url.absoluteString)")
+
+      // 여기서 Flutter 엔진에 딥링크 정보를 전달합니다
+      let flutterViewController = window?.rootViewController as? FlutterViewController
+      let channel = FlutterMethodChannel(name: "com.puritech.jayuvillage/deeplink", binaryMessenger: flutterViewController!.binaryMessenger)
+
+      channel.invokeMethod("handleDeepLink", arguments: url.absoluteString)
+
+      return true
   }
 }

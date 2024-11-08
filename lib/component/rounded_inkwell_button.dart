@@ -7,12 +7,12 @@ class RoundedInkwellButton extends StatelessWidget {
   final Color backgroundColor;
 
   const RoundedInkwellButton({
-    Key? key,
+    super.key,
     required this.onTap,
     required this.child,
     this.splashColor = Colors.blue,
     this.backgroundColor = const Color(0xff0baf00),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

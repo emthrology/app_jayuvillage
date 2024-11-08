@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_ex/const/contents/content_type.dart';
-import 'package:webview_ex/service/youtube_audio_url_extractor.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../component/comments_section.dart';
@@ -11,7 +10,6 @@ import '../../component/contents/player/social_buttons.dart';
 import '../../service/api_service.dart';
 import '../../service/dependency_injecter.dart';
 import '../../service/player_manager.dart';
-import '../../store/secure_storage.dart';
 import '../../store/store_service.dart';
 import 'contents_index_screen.dart';
 

@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webview_ex/service/contents/mapping_service.dart';

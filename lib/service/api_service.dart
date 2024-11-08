@@ -16,7 +16,7 @@ class ApiService {
     String? token = await _storeService.getPrefs('XSRF_TOKEN');
     return token;
   }
-  Future<List<dynamic>> fetchItems({required String endpoint, Map<String, String>? queries, bool useCache = true}) async {
+  Future<List<dynamic>> fetchItems({required String endpoint, Map<String, String>? queries, bool useCache = true,  bool useWhole = false}) async {
     // 쿼리 파라미터를 URL에 추가
     String queryString = '';
     List<dynamic>? cachedData;
@@ -25,6 +25,7 @@ class ApiService {
       queryString =  queries.entries.map((e) => '${e.key}=${e.value}').join('&');
     }
     final uri = Uri.parse('$baseUrl/$endpoint?$queryString');
+    print('$baseUrl/$endpoint?$queryString');
     if(useCache) {
       // 캐시 키 생성
       cacheKey = queryString.isNotEmpty ? '$endpoint?$queryString' : endpoint;
@@ -45,7 +46,7 @@ class ApiService {
             )
         );
         if(response.statusCode == 200 && response.data is! String) {
-          final responseData = response.data['data'];
+          final responseData = useWhole ? response.data :response.data['data'];
           if (responseData is List) {
             final data = List<dynamic>.from(responseData);
             if(useCache)_storeService.setCachedData(cacheKey, data);

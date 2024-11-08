@@ -10,7 +10,6 @@ import '../../../service/contents/mapping_service.dart';
 import '../../../service/dependency_injecter.dart';
 import '../../../service/player_manager.dart';
 import '../../../store/secure_storage.dart';
-import '../../../const/contents/content_type.dart';
 import '../../../store/store_service.dart';
 
 
@@ -72,11 +71,11 @@ class _PlaylistModalState extends State<PlaylistModal>
     });
     String sessionData = await getValue('session');
     Map<String, dynamic> json = jsonDecode(sessionData);
-    int user_id = json['success']?['id'];
+    int userId = json['success']?['id'];
     try {
       final playlistData = await _apiService.fetchItems(
         endpoint: endpoint,
-        queries: {'bag_item_id':'${widget.item['id']}','user_id':'$user_id'}
+        queries: {'bag_item_id':'${widget.item['id']}','user_id':'$userId'}
       );
       print('playlistData:$playlistData');
       setState(() {

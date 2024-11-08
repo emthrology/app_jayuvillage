@@ -7,7 +7,6 @@ import 'package:webview_ex/service/player_manager.dart';
 import '../../../screen/contents/audio_screen.dart';
 import '../../../service/dependency_injecter.dart';
 import '../../../notifiers/play_button_notifier.dart';
-import '../../../notifiers/repeat_button_notifier.dart';
 
 class MiniAudioPlayer extends StatefulWidget {
   const MiniAudioPlayer({super.key});
