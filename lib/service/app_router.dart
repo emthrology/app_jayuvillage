@@ -32,6 +32,15 @@ final goRouter = GoRouter(
         }
     ),
     GoRoute(
+        path:'/confirm/jay',
+        builder: (context,state) {
+          debugPrint(state.uri.toString());
+          final id = state.uri.queryParameters['id'];
+          final name = state.uri.queryParameters['name'];
+          return HomeScreen(homeUrl: Uri.parse('https://jayuvillage.com/confirm/jay?id=$id&name=$name'), pageId: '0');
+        }
+    ),
+    GoRoute(
         path:'/contents',
         builder:(context, state) {
           return ContentsIndexScreen(pageIndex:'1');

@@ -201,12 +201,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _setComponents(String url) {
-    url.endsWith("posts/create")
-        ? _showBottomNav = false
-        : _showBottomNav = true;
-    url.endsWith("posts/create")
-        ? _showCreatePostNav = true
-        : _showCreatePostNav = false;
+    setState(() {
+      url.endsWith("posts/create")
+          ? _showBottomNav = false
+          : _showBottomNav = true;
+      url.endsWith("posts/create")
+          ? _showCreatePostNav = true
+          : _showCreatePostNav = false;
+    });
+
   }
 
   Future<void> writeValue(String key, String value) async {
@@ -373,6 +376,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
         onUrlChange: (UrlChange change) {
           var url = change.url.toString();
+          // print('onUrlChange:$url');
           _currentUrl = Uri.parse(url);
           _setComponents(url);
         },
@@ -528,17 +532,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         )
                         .toList(),
                   ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: [
-                  //     RoundBtn(
-                  //         color: Color(0xff0baf00),
-                  //         borderColor: Color(0xff0baf00),
-                  //         text: '조직활동',
-                  //         uri: 'https://jayuvillage.com/organization',
-                  //         onTap: _onBtnTapped),
-                  //   ],
-                  // )
                 ],
               )
             : _showCreatePostNav
