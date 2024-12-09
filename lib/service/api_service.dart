@@ -72,7 +72,15 @@ class ApiService {
           );
           throw Exception('$endpoint 불러오기 실패');
         }
-      }catch (e) {
+      }on DioException catch (e) {
+        debugPrint('resposne:${e.response}');
+        if (e.response != null) {
+          debugPrint('Status code: ${e.response?.statusCode}');
+          debugPrint('Data: ${e.response?.data}');
+          debugPrint('Headers: ${e.response?.headers}');
+        } else {
+          debugPrint('Error message: ${e.message}');
+        }
         print(e);
         Fluttertoast.showToast(
             msg: "$endpoint 불러오기 중 오류 발생",

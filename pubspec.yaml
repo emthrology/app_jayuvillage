@@ -70,6 +70,7 @@ dependencies:
   intl: ^0.17.0
 #  provider: ^6.1.1
   flutter_svg: ^2.0.9
+  icon_decoration: ^2.1.0
   logger: any
 dev_dependencies:
   flutter_test:
