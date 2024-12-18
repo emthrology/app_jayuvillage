@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/ex_menus_index.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_item_status/branch_manager_itemlist.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_item_status/general_manager_itemlist.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_item_status/search_delivery_address_screen.dart';
 
 import '../screen/contents/audio_screen.dart';
 import '../screen/contents/contents_index_screen.dart';
 import '../screen/contents/share_screen.dart';
 import '../screen/error_screen.dart';
 import '../screen/home_screen.dart';
-import '../screen/organization_manager_status/organization_manager_index_screen.dart';
+import '../screen/manager_exclusive_menus/organization_item_status/complete_screen.dart';
+import '../screen/manager_exclusive_menus/organization_manager_status/organization_manager_index_screen.dart';
 final goRouter = GoRouter(
 
   initialLocation: '/',
@@ -81,9 +86,44 @@ final goRouter = GoRouter(
     GoRoute(
         path:'/organization/manager',
         builder:(context, state) {
-          return OrganizationManagerIndexScreen();
+          return ExMenusIndex();
         }
     ),
+    GoRoute(
+        path:'/organization/manager/items/:id',
+        builder:(context, state) {
+          if(int.parse(state.pathParameters['id']!) < 10) {
+            return OrganizationManagerIndexScreen();
+          }else {
+            final position = state.uri.queryParameters['position'];
+            if(position == '총괄팀장') {
+              return GeneralManagerItemlist();
+            }else { //position == '실행위원장'
+              return BranchManagerItemlist(phone: state.uri.queryParameters['phone']!);
+            }
+            // return OrganizationItemIndexScreen();
+          }
+        }
+    ),
+    GoRoute(
+      path:'/organization/manager/address',
+      builder:(context, state) {
+        return SearchDeliveryAddressScreen(
+          state: state.uri.queryParameters['state']!,
+          election: state.uri.queryParameters['election']!,
+        );
+      }
+    ),
+    GoRoute(
+        path:'/organization/manager/complete',
+        builder:(context, state) {
+          return CompleteScreen(
+            clientName: state.uri.queryParameters['name']!,
+            clientPhone: state.uri.queryParameters['phone']!,
+            clientAddress: state.uri.queryParameters['address']!,
+          );
+        }
+    )
   ],
   errorBuilder: (context, state) {
     return ErrorScreen(error: state.error.toString());

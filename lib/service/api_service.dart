@@ -162,7 +162,24 @@ class ApiService {
         ),
       );
       return response;
-    } catch (e) {
+    } on DioException catch (e) {
+      debugPrint('resposne:${e.response}');
+      if (e.response != null) {
+        debugPrint('Status code: ${e.response?.statusCode}');
+        debugPrint('Data: ${e.response?.data}');
+        debugPrint('Headers: ${e.response?.headers}');
+      } else {
+        debugPrint('Error message: ${e.message}');
+      }
+      Fluttertoast.showToast(
+          msg: "${e.response?.data['message'] ?? '데이터 송신 중 에러 발생'}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Color(0xffff0000),
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // throw Exception(e);
       throw Exception('Error during POST request: $e');
     }
   }

@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  daum_postcode_view:
+    dependency: "direct main"
+    description:
+      name: daum_postcode_view
+      sha256: "8657ae5847f318a96b237a95ba93fa664396e8ab9e6dab967162d3eeab3719ef"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   dbus:
     dependency: transitive
     description:

@@ -71,6 +71,7 @@ dependencies:
 #  provider: ^6.1.1
   flutter_svg: ^2.0.9
   icon_decoration: ^2.1.0
+  daum_postcode_view: ^0.1.2
   logger: any
 dev_dependencies:
   flutter_test:

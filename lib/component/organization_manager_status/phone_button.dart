@@ -6,16 +6,18 @@ import 'package:url_launcher/url_launcher.dart';
 
 class PhoneButton extends StatelessWidget {
   final String phoneNumber;
+
   const PhoneButton({super.key, required this.phoneNumber});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      width: 90,
+      width: 91,
       decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(5)),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: Color(0xff0baf00))),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: GestureDetector(
@@ -48,6 +50,7 @@ class PhoneButton extends StatelessWidget {
       ),
     );
   }
+
   Future<void> _launchURL(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));

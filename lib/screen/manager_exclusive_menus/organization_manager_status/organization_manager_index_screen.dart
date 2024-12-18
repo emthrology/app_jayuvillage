@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:webview_ex/screen/organization_manager_status/branch_manager_checklist.dart';
-import 'package:webview_ex/screen/organization_manager_status/general_manager_checklist.dart';
-import 'package:webview_ex/screen/organization_manager_status/manager_checklist.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_manager_status/branch_manager_checklist.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_manager_status/general_manager_checklist.dart';
+import 'package:webview_ex/screen/manager_exclusive_menus/organization_manager_status/manager_checklist.dart';
 
-import '../../service/api_service.dart';
-import '../../service/app_router.dart';
-import '../../service/dependency_injecter.dart';
-import '../../store/secure_storage.dart';
+import '../../../service/api_service.dart';
+import '../../../service/app_router.dart';
+import '../../../service/dependency_injecter.dart';
+import '../../../store/secure_storage.dart';
+
+
+
 
 class OrganizationManagerIndexScreen extends StatefulWidget {
   const OrganizationManagerIndexScreen({super.key});
